@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-echo "🔄 Déploiement de CalTracker..."
+echo "🔄 Déploiement de freshfeed..."
 
-cd /var/www/caltracker
+cd /var/www/freshfeed
 
 echo "→ Passage de la propriété à ubuntu..."
-sudo chown -R ubuntu:ubuntu /var/www/caltracker
+sudo chown -R ubuntu:ubuntu /var/www/freshfeed
 
 echo "→ Récupération des derniers changements..."
 git pull origin main
@@ -29,8 +29,8 @@ php artisan route:clear
 php artisan view:clear
 
 echo "→ Passage de la propriété à www-data..."
-sudo chown -R www-data:www-data /var/www/caltracker
-sudo chmod -R 755 /var/www/caltracker/storage /var/www/caltracker/bootstrap/cache
+sudo chown -R www-data:www-data /var/www/freshfeed
+sudo chmod -R 755 /var/www/freshfeed/storage /var/www/freshfeed/bootstrap/cache
 
 echo "→ Reconstruction des caches de production..."
 php artisan config:cache
