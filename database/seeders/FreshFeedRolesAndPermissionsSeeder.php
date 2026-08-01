@@ -40,7 +40,6 @@ class FreshFeedRolesAndPermissionsSeeder extends Seeder
 
         $editor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
         $editor->syncPermissions([
-            'view-admin',
             'manage-posts',
             'publish-posts',
             'manage-categories',
@@ -49,7 +48,6 @@ class FreshFeedRolesAndPermissionsSeeder extends Seeder
 
         $contributor = Role::firstOrCreate(['name' => 'contributor', 'guard_name' => 'web']);
         $contributor->syncPermissions([
-            'view-admin',
             'manage-own-posts', // pas de publish-posts : reste en brouillon jusqu'à validation
         ]);
 

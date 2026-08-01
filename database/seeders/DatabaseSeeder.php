@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FreshFeedRolesAndPermissionsSeeder::class,
             FreshFeedTestUsersSeeder::class,
+            FreshFeedDemoRecipesSeeder::class,
         ]);
     }
 }

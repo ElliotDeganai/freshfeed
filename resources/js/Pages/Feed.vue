@@ -10,11 +10,12 @@
         </div>
 
         <div class="feed-list">
-            <article v-for="post in posts.data" :key="post.id" class="post-card">
+            <article v-for="post in items" :key="post.id" class="post-card">
                 <div class="post-card-header">
-                    <UserAvatar :user="post.user" :size="36" />
+                    <UserAvatar :user="post.user" :size="36" linkable />
                     <div class="post-header-body">
-                        <span class="post-author">{{ post.user?.name ?? 'FreshFeed' }}</span>
+                        <Link v-if="post.user" :href="route('users.show', post.user.id)" class="post-author">{{ post.user.name }}</Link>
+                        <span v-else class="post-author">{{ $page.props.site.name }}</span>
                         <span class="post-meta">{{ timeAgo(post.published_at) }} · {{ post.categories.map(c => c.name).join(', ') || 'Recette' }}</span>
                     </div>
                     <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
@@ -31,16 +32,16 @@
                 </div>
             </article>
 
-            <div v-if="posts.data.length === 0" class="empty-state">
+            <div v-if="items.length === 0" class="empty-state">
                 <i class="ti ti-tools-kitchen-2"></i>
                 <p>Aucune recette publiée pour l'instant.</p>
             </div>
-        </div>
 
-        <div class="pagination">
-            <Link v-for="link in posts.links" :key="link.label" :href="link.url || ''"
-                class="page-link" :class="{ on: link.active, off: !link.url }"
-                v-html="link.label" />
+            <!-- Sentinelle observée pour déclencher le chargement de la page suivante -->
+            <div ref="sentinel" class="scroll-sentinel">
+                <div v-if="loading" class="loading-spinner"><i class="ti ti-loader-2"></i> Chargement...</div>
+                <div v-else-if="!hasMore && items.length > 0" class="end-of-feed">Tu as tout vu 👋</div>
+            </div>
         </div>
     </AppLayout>
 </template>
@@ -56,7 +57,40 @@ export default {
     props: {
         posts: Object,
     },
+    data() {
+        return {
+            items: [...this.posts.data],
+            currentPage: this.posts.current_page,
+            hasMore: this.posts.next_page_url !== null,
+            loading: false,
+            observer: null,
+        };
+    },
+    mounted() {
+        this.observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) this.loadMore();
+        }, { rootMargin: '400px' }); // déclenche un peu avant d'atteindre le bas visuel
+        this.observer.observe(this.$refs.sentinel);
+    },
+    beforeUnmount() {
+        this.observer?.disconnect();
+    },
     methods: {
+        loadMore() {
+            if (this.loading || !this.hasMore) return;
+            this.loading = true;
+
+            fetch(`${route('feed')}?page=${this.currentPage + 1}`, {
+                headers: { Accept: 'application/json' },
+            })
+                .then((r) => r.json())
+                .then((fresh) => {
+                    this.items.push(...fresh.data);
+                    this.currentPage = fresh.current_page;
+                    this.hasMore = fresh.next_page_url !== null;
+                })
+                .finally(() => { this.loading = false; });
+        },
         timeAgo(dateStr) {
             if (!dateStr) return '';
             const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -73,7 +107,7 @@ export default {
 <style scoped>
 .feed-header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    max-width: 560px; margin: 0 auto 18px;
+    max-width: 720px; margin: 0 auto 18px;
 }
 .feed-title { font-size: 20px; font-weight: 500; color: #10241D; }
 .btn-add-recipe {
@@ -89,7 +123,7 @@ export default {
     .btn-add-recipe { padding: 9px; }
 }
 
-.feed-list { display: flex; flex-direction: column; gap: 14px; max-width: 560px; margin: 0 auto; }
+.feed-list { display: flex; flex-direction: column; gap: 14px; max-width: 720px; margin: 0 auto; }
 
 .post-card { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; overflow: hidden; }
 .post-card-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
@@ -98,7 +132,8 @@ export default {
     display: flex; align-items: center; justify-content: center;
 }
 .post-header-body { display: flex; flex-direction: column; gap: 1px; }
-.post-author { font-size: 13px; font-weight: 500; color: #10241D; }
+.post-author { font-size: 13px; font-weight: 500; color: #10241D; text-decoration: none; }
+.post-author:hover { color: #1D9E75; }
 .post-meta { font-size: 11.5px; color: #8FA098; }
 .calorie-pill {
     display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
@@ -116,11 +151,9 @@ export default {
 .empty-state { text-align: center; color: #8FA098; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .empty-state i { font-size: 30px; }
 
-.pagination { display: flex; gap: 4px; margin-top: 20px; justify-content: center; }
-.page-link {
-    padding: 6px 12px; border-radius: 20px; font-size: 13px; text-decoration: none; color: #4B5A54;
-    border: 0.5px solid #E7E9E7;
-}
-.page-link.on { background: #1D9E75; color: #fff; border-color: #1D9E75; }
-.page-link.off { opacity: .4; pointer-events: none; }
+.scroll-sentinel { display: flex; justify-content: center; padding: 24px 0; }
+.loading-spinner { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8FA098; }
+.loading-spinner i { font-size: 16px; animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.end-of-feed { font-size: 13px; color: #8FA098; }
 </style>

@@ -58,7 +58,7 @@ const MESSAGES = {
     },
     503: {
         title: 'Maintenance en cours',
-        text: "FreshFeed est momentanément indisponible. Reviens dans quelques minutes.",
+        text: "{site} est momentanément indisponible. Reviens dans quelques minutes.",
         icon: 'ti-tool',
     },
 };
@@ -80,11 +80,12 @@ export default {
     },
     computed: {
         message() {
-            return MESSAGES[this.status] ?? {
+            const base = MESSAGES[this.status] ?? {
                 title: 'Erreur inattendue',
                 text: "Une erreur inattendue s'est produite.",
                 icon: 'ti-alert-circle',
             };
+            return { ...base, text: base.text.replace('{site}', this.$page.props.site?.name ?? 'FreshFeed') };
         },
         theme() {
             return THEMES[this.status] ?? { bg: '#F0F1F0', text: '#6B7B74' };

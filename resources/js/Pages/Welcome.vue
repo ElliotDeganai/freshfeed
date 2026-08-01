@@ -15,7 +15,6 @@ const PREVIEW_FALLBACKS = [
 
 const DEFAULT_CONTENT = {
     hero_title: 'Cuisine, partage, découvre.',
-    hero_subtitle: "FreshFeed est l'endroit où de vraies personnes partagent ce qu'elles cuisinent vraiment — rapide, healthy ou gourmand.",
     hero_badge: 'Le réseau social des cuisiniers du quotidien',
     hero_image: null,
     preview_images: [null, null, null, null, null, null],
@@ -58,11 +57,15 @@ export default {
         };
     },
     computed: {
+        siteName() {
+            return this.$page.props.site?.name ?? 'FreshFeed';
+        },
         heroTitle() {
             return this.content.hero_title || DEFAULT_CONTENT.hero_title;
         },
         heroSubtitle() {
-            return this.content.hero_subtitle || DEFAULT_CONTENT.hero_subtitle;
+            return this.content.hero_subtitle
+                || `${this.siteName} est l'endroit où de vraies personnes partagent ce qu'elles cuisinent vraiment — rapide, healthy ou gourmand.`;
         },
         heroBadge() {
             return this.content.hero_badge || DEFAULT_CONTENT.hero_badge;
@@ -93,7 +96,7 @@ export default {
     <div class="welcome-shell">
         <header class="welcome-topbar">
             <div class="welcome-topbar-inner">
-                <Link href="/" class="brand-logo"><SiteLogo :size="28" />FreshFeed</Link>
+                <Link href="/" class="brand-logo"><SiteLogo :size="28" />{{ siteName }}</Link>
 
                 <nav class="welcome-nav">
                     <Link v-if="$page.props.auth.user" :href="route('feed')" class="btn-primary">
@@ -116,7 +119,7 @@ export default {
                 <h1 class="intro-title">{{ heroTitle }}</h1>
                 <p class="intro-text">{{ heroSubtitle }}</p>
                 <Link v-if="!$page.props.auth.user" :href="route('register')" class="btn-primary btn-lg">
-                    Rejoindre FreshFeed <i class="ti ti-arrow-right"></i>
+                    Rejoindre {{ siteName }} <i class="ti ti-arrow-right"></i>
                 </Link>
             </div>
             <div class="intro-image-col">
@@ -197,7 +200,7 @@ export default {
         <!-- CTA final -->
         <section class="final-cta">
             <h2 class="final-cta-title">Prêt à partager ta première recette ?</h2>
-            <p class="final-cta-text">Rejoins la communauté FreshFeed, c'est gratuit.</p>
+            <p class="final-cta-text">Rejoins la communauté {{ siteName }}, c'est gratuit.</p>
             <Link v-if="!$page.props.auth.user" :href="route('register')" class="btn-primary btn-lg">
                 Créer mon compte
             </Link>
@@ -207,7 +210,13 @@ export default {
         </section>
 
         <footer class="welcome-footer">
-            FreshFeed — {{ new Date().getFullYear() }}
+            <a href="https://ed-factory.com/" target="_blank" rel="noopener noreferrer" class="ed-credit">
+                Made by
+                <img src="/images/ed-logo.png" alt="ED" class="ed-credit-logo" />
+                Web Factory
+            </a>
+            <div class="footer-divider"></div>
+            <p>{{ siteName }} — {{ new Date().getFullYear() }}</p>
         </footer>
     </div>
 </template>
@@ -242,7 +251,7 @@ export default {
 /* Hero */
 .welcome-intro {
     display: flex; align-items: center; gap: 36px;
-    padding: 44px 32px; max-width: 1000px; margin: 0 auto;
+    padding: 44px 32px; max-width: 1100px; margin: 0 auto;
 }
 .intro-text-col { flex: 1; min-width: 0; }
 .hero-badge {
@@ -264,7 +273,7 @@ export default {
 }
 
 /* Aperçu */
-.preview { padding: 0 24px 20px; max-width: 900px; margin: 0 auto; }
+.preview { padding: 0 24px 20px; max-width: 1100px; margin: 0 auto; }
 .preview-grid { column-count: 3; column-gap: 12px; }
 .preview-tile {
     break-inside: avoid; margin-bottom: 12px; border-radius: 14px; overflow: hidden; background: #EDEFEC;
@@ -302,6 +311,14 @@ export default {
 .final-cta-text { font-size: 13.5px; color: #6B7B74; margin-bottom: 24px; }
 
 .welcome-footer { text-align: center; padding: 24px; font-size: 12px; color: #8FA098; border-top: 0.5px solid #EEEFEC; }
+.welcome-footer p { margin: 0; }
+.ed-credit {
+    display: inline-flex; align-items: center; gap: 6px; color: #8FA098; text-decoration: none;
+    font-size: 12px; transition: color .15s;
+}
+.ed-credit:hover { color: #4B5A54; }
+.ed-credit-logo { height: 24px; width: 24px; object-fit: contain; }
+.footer-divider { width: 96px; height: 1px; background: #EEEFEC; margin: 12px auto; }
 
 @media (max-width: 900px) {
     .features-grid { grid-template-columns: repeat(2, 1fr); }

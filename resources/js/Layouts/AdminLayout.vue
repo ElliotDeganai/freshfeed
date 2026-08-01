@@ -4,7 +4,7 @@
             <div class="admin-topbar-inner">
                 <Link href="/" class="admin-brand">
                     <SiteLogo :size="26" />
-                    <span class="admin-brand-logo">FreshFeed</span>
+                    <span class="admin-brand-logo">{{ $page.props.site.name }}</span>
                     <span class="admin-brand-tag">admin</span>
                 </Link>
 
@@ -80,6 +80,8 @@
         <main class="admin-content">
             <slot />
         </main>
+
+        <SiteFooter />
     </div>
 </template>
 
@@ -87,9 +89,10 @@
 import { Link } from '@inertiajs/vue3';
 import SiteLogo from '@/Components/SiteLogo.vue';
 import UserAvatar from '@/Components/UserAvatar.vue';
+import SiteFooter from '@/Components/SiteFooter.vue';
 
 export default {
-    components: { Link, SiteLogo, UserAvatar },
+    components: { Link, SiteLogo, UserAvatar, SiteFooter },
     data() {
         return {
             menuOpen: false,

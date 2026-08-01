@@ -47,7 +47,7 @@
                             </div>
                             <span>{{ form.canonical_domain || 'freshfeed.ch' }}</span>
                         </div>
-                        <div class="google-preview-title">{{ form.browser_title || 'FreshFeed' }}</div>
+                        <div class="google-preview-title">{{ form.browser_title || form.app_name }}</div>
                         <div class="google-preview-desc">
                             {{ form.meta_description || 'Aucune meta description définie pour le moment.' }}
                         </div>
@@ -112,7 +112,7 @@ export default {
 </script>
 
 <style scoped>
-.settings-form { display: flex; flex-direction: column; gap: 16px; max-width: 560px; }
+.settings-form { display: flex; flex-direction: column; gap: 16px; max-width: 680px; }
 .panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 20px 22px; }
 .panel-title {
     font-size: 14.5px; font-weight: 500; margin-bottom: 16px; color: #10241D;

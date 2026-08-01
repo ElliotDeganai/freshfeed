@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'roles' => $request->user()->getRoleNames(), // Collection ['admin'] etc.
                     'avatar_path' => $request->user()->avatar_path,
+                    'bio' => $request->user()->bio,
 
                 ] : null,
                 'permissions' => $request->user()

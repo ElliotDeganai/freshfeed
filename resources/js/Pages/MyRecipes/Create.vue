@@ -103,10 +103,10 @@ export default {
 </script>
 
 <style scoped>
-.page-header { max-width: 560px; margin: 0 auto 18px; }
+.page-header { max-width: 680px; margin: 0 auto 18px; }
 .page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
-.panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 24px; max-width: 560px; margin: 0 auto; }
+.panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 24px; max-width: 680px; margin: 0 auto; }
 .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; font-size: 13px; color: #4B5A54; }
 .input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; }
 .input--sm { width: 70px; flex-shrink: 0; }

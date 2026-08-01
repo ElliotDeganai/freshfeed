@@ -31,6 +31,12 @@ class ProfileController extends Controller
     {
         $request->user()->fill($request->validated());
 
+        // ⬇️ Ligne à ajouter — la bio n'est pas dans ProfileUpdateRequest (name/email
+        // uniquement par défaut sur Breeze), on la valide et l'assigne séparément.
+        $request->user()->bio = $request->validate([
+            'bio' => ['nullable', 'string', 'max:5000'],
+        ])['bio'] ?? null;
+
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }

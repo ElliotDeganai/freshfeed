@@ -22,9 +22,13 @@
                 <h1 class="recipe-title">{{ post.title }}</h1>
 
                 <div class="recipe-meta">
-                    <div class="meta-author">
+                    <Link v-if="post.user" :href="route('users.show', post.user.id)" class="meta-author">
                         <UserAvatar :user="post.user" :size="28" />
-                        <span>{{ post.user?.name ?? 'FreshFeed' }}</span>
+                        <span>{{ post.user.name }}</span>
+                    </Link>
+                    <div v-else class="meta-author">
+                        <UserAvatar :user="null" :size="28" />
+                        <span>{{ $page.props.site.name }}</span>
                     </div>
                     <span v-if="post.calories !== null" class="meta-calories"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
                 </div>
@@ -77,7 +81,7 @@ export default {
 </script>
 
 <style scoped>
-.recipe-page { max-width: 640px; margin: 0 auto; }
+.recipe-page { max-width: 760px; margin: 0 auto; }
 
 .preview-banner {
     display: flex; align-items: center; gap: 8px; background: #FAEEDA; color: #854F0B;
@@ -95,7 +99,8 @@ export default {
 .recipe-title { font-size: 24px; font-weight: 500; color: #10241D; line-height: 1.3; margin-bottom: 12px; }
 
 .recipe-meta { display: flex; align-items: center; gap: 16px; }
-.meta-author { display: flex; align-items: center; gap: 8px; }
+.meta-author { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.meta-author:hover span { color: #1D9E75; }
 .meta-avatar { width: 28px; height: 28px; border-radius: 50%; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
 .meta-author span { font-size: 13px; color: #4B5A54; font-weight: 500; }
 .meta-calories { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #993C1D; background: #FAECE7; padding: 4px 11px; border-radius: 999px; }

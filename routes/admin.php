@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Zone Admin — /admin
 |--------------------------------------------------------------------------
-| Toutes les routes exigent : authentifié + permission 'view-admin'.
-| Chaque groupe est ensuite affiné avec la permission spécifique.
+| Toutes les routes exigent : authentifié + rôle "admin" exclusivement.
+| Les permissions internes (manage-posts, manage-categories...) restent en place
+| pour affiner ce que fait un admin, mais editor/contributor n'accèdent plus du
+| tout à /admin — voir MyRecipesController pour leur gestion de recettes.
 */
 
-Route::middleware(['auth', 'verified', 'permission:view-admin'])
+Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

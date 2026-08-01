@@ -53,10 +53,10 @@ export default {
 </script>
 
 <style scoped>
-.page-header { max-width: 560px; margin: 0 auto 18px; }
+.page-header { max-width: 680px; margin: 0 auto 18px; }
 .page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
-.profile-sections { display: flex; flex-direction: column; gap: 14px; max-width: 560px; margin: 0 auto; }
+.profile-sections { display: flex; flex-direction: column; gap: 14px; max-width: 680px; margin: 0 auto; }
 .panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 22px; }
 .panel--danger { border-color: #F5C4B3; }
 .panel-title {

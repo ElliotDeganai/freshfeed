@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MyRecipesController;
 use App\Http\Controllers\PostShowController;
 use App\Http\Controllers\ProfileAvatarController;
+use App\Http\Controllers\UserProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +73,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [ProfileAvatarController::class, 'update'])->name('profile.avatar.update');
     Route::delete('/profile/avatar', [ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
 });
+
+Route::get('/u/{user}', [UserProfileController::class, 'show'])->name('users.show');
 
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';

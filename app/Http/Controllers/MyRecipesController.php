@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostIngredient;
 use App\Models\PostStep;
 use App\Models\PostStepImage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -24,13 +25,19 @@ use Inertia\Response;
  */
 class MyRecipesController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response|JsonResponse
     {
         $posts = Post::query()
             ->where('user_id', Auth::id())
             ->with('categories:id,name')
             ->latest()
             ->paginate(12);
+
+        // Appelé en fetch() depuis le scroll infini — réponse JSON directe,
+        // sans passer par Inertia, donc aucune manipulation d'URL/historique possible.
+        if ($request->wantsJson()) {
+            return response()->json($posts);
+        }
 
         return Inertia::render('MyRecipes/Index', [
             'posts' => $posts,

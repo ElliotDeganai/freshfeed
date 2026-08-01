@@ -12,6 +12,12 @@
             <p v-if="form.errors.email" class="field-error">{{ form.errors.email }}</p>
         </label>
 
+        <label class="field">
+            <span>Description</span>
+            <RichTextEditor v-model="form.bio" placeholder="Parle un peu de toi, de ta cuisine..." />
+            <p v-if="form.errors.bio" class="field-error">{{ form.errors.bio }}</p>
+        </label>
+
         <div v-if="mustVerifyEmail && !$page.props.auth.user.email_verified_at" class="verify-notice">
             <p>Ton email n'est pas encore vérifié.
                 <Link :href="route('verification.send')" method="post" as="button" class="verify-link">
@@ -34,9 +40,10 @@
 
 <script>
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import RichTextEditor from '@/Components/RichTextEditor.vue';
 
 export default {
-    components: { Link },
+    components: { Link, RichTextEditor },
     props: {
         mustVerifyEmail: Boolean,
         status: String,
@@ -47,6 +54,7 @@ export default {
             form: useForm({
                 name: user.name,
                 email: user.email,
+                bio: user.bio,
             }),
         };
     },

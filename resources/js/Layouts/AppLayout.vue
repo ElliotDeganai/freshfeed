@@ -1,7 +1,7 @@
 <template>
     <div class="app-shell">
         <header class="app-topbar">
-            <Link href="/feed" class="brand"><SiteLogo :size="24" /><span class="brand-logo">FreshFeed</span></Link>
+            <Link href="/feed" class="brand"><SiteLogo :size="24" /><span class="brand-logo">{{ $page.props.site.name }}</span></Link>
 
             <nav class="app-nav">
                 <Link href="/feed" class="app-nav-link" :class="{ on: isActive('/feed') }">
@@ -50,6 +50,8 @@
             <slot />
         </main>
 
+        <SiteFooter />
+
         <!-- barre de navigation basse — mobile uniquement -->
         <nav class="app-tabbar">
             <Link href="/feed" class="tab" :class="{ on: isActive('/feed') }">
@@ -75,9 +77,10 @@
 import { Link } from '@inertiajs/vue3';
 import SiteLogo from '@/Components/SiteLogo.vue';
 import UserAvatar from '@/Components/UserAvatar.vue';
+import SiteFooter from '@/Components/SiteFooter.vue';
 
 export default {
-    components: { Link, SiteLogo, UserAvatar },
+    components: { Link, SiteLogo, UserAvatar, SiteFooter },
     data() {
         return {
             menuOpen: false,
@@ -85,7 +88,7 @@ export default {
     },
     computed: {
         canAccessAdmin() {
-            return this.$page.props.auth.permissions?.includes('view-admin') ?? false;
+            return this.$page.props.auth.user?.roles?.includes('admin') ?? false;
         },
     },
     mounted() {
@@ -158,7 +161,7 @@ export default {
 .menu-fade-enter-active, .menu-fade-leave-active { transition: opacity .12s, transform .12s; }
 .menu-fade-enter-from, .menu-fade-leave-to { opacity: 0; transform: translateY(-4px); }
 
-.app-content { max-width: 900px; margin: 0 auto; padding: 20px 16px 40px; }
+.app-content { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
 
 .app-tabbar {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;

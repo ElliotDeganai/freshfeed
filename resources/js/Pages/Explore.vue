@@ -13,7 +13,7 @@
         </div>
 
         <div class="explore-grid">
-            <Link v-for="post in posts.data" :key="post.id" :href="route('posts.show', post.id)" class="explore-card">
+            <Link v-for="post in items" :key="post.id" :href="route('posts.show', post.id)" class="explore-card">
                 <div class="explore-card-image">
                     <img v-if="post.image_path" :src="`/storage/${post.image_path}`" alt="" />
                     <div v-else class="explore-card-fallback" :style="{ background: avatarColor(post.id).bg, color: avatarColor(post.id).text }">
@@ -24,16 +24,16 @@
                 <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
             </Link>
 
-            <div v-if="posts.data.length === 0" class="empty-state">
+            <div v-if="items.length === 0" class="empty-state">
                 <i class="ti ti-compass"></i>
                 <p>Aucune recette dans cette catégorie.</p>
             </div>
         </div>
 
-        <div class="pagination">
-            <Link v-for="link in posts.links" :key="link.label" :href="link.url || ''"
-                class="page-link" :class="{ on: link.active, off: !link.url }"
-                v-html="link.label" />
+        <!-- Sentinelle observée pour déclencher le chargement de la page suivante -->
+        <div ref="sentinel" class="scroll-sentinel">
+            <div v-if="loading" class="loading-spinner"><i class="ti ti-loader-2"></i> Chargement...</div>
+            <div v-else-if="!hasMore && items.length > 0" class="end-of-feed">Tu as tout vu 👋</div>
         </div>
     </AppLayout>
 </template>
@@ -51,7 +51,45 @@ export default {
         posts: Object,
         activeCategory: { type: Number, default: null },
     },
-    methods: { avatarColor },
+    data() {
+        return {
+            items: [...this.posts.data],
+            currentPage: this.posts.current_page,
+            hasMore: this.posts.next_page_url !== null,
+            loading: false,
+            observer: null,
+        };
+    },
+    mounted() {
+        this.observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) this.loadMore();
+        }, { rootMargin: '400px' });
+        this.observer.observe(this.$refs.sentinel);
+    },
+    beforeUnmount() {
+        this.observer?.disconnect();
+    },
+    methods: {
+        avatarColor,
+        loadMore() {
+            if (this.loading || !this.hasMore) return;
+            this.loading = true;
+
+            const params = new URLSearchParams({ page: this.currentPage + 1 });
+            if (this.activeCategory) params.set('category', this.activeCategory);
+
+            fetch(`${route('explore')}?${params}`, {
+                headers: { Accept: 'application/json' },
+            })
+                .then((r) => r.json())
+                .then((fresh) => {
+                    this.items.push(...fresh.data);
+                    this.currentPage = fresh.current_page;
+                    this.hasMore = fresh.next_page_url !== null;
+                })
+                .finally(() => { this.loading = false; });
+        },
+    },
 };
 </script>
 
@@ -80,11 +118,9 @@ export default {
 .empty-state { grid-column: 1 / -1; text-align: center; color: #8FA098; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .empty-state i { font-size: 30px; }
 
-.pagination { display: flex; gap: 4px; margin-top: 20px; justify-content: center; }
-.page-link {
-    padding: 6px 12px; border-radius: 20px; font-size: 13px; text-decoration: none; color: #4B5A54;
-    border: 0.5px solid #E7E9E7;
-}
-.page-link.on { background: #1D9E75; color: #fff; border-color: #1D9E75; }
-.page-link.off { opacity: .4; pointer-events: none; }
+.scroll-sentinel { display: flex; justify-content: center; padding: 24px 0; }
+.loading-spinner { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8FA098; }
+.loading-spinner i { font-size: 16px; animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.end-of-feed { font-size: 13px; color: #8FA098; }
 </style>

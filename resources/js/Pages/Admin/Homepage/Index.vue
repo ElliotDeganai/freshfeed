@@ -137,7 +137,7 @@ export default {
 </script>
 
 <style scoped>
-.content-form { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+.content-form { display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
 .panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 20px 22px; }
 .panel-title {
     font-size: 14.5px; font-weight: 500; margin-bottom: 6px; color: #10241D;

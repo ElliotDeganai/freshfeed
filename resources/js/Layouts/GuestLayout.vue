@@ -7,7 +7,7 @@
 
             <Link href="/" class="brand-logo-row">
                 <span class="brand-logo-mark"><SiteLogo :size="20" dark /></span>
-                <span class="brand-logo-text">FreshFeed</span>
+                <span class="brand-logo-text">{{ $page.props.site.name }}</span>
             </Link>
 
             <div class="brand-copy">
@@ -23,15 +23,14 @@
                 </ul>
             </div>
 
-            <span class="brand-footnote">FreshFeed — {{ new Date().getFullYear() }}</span>
+            <p class="brand-footnote">{{ $page.props.site.name }} — {{ new Date().getFullYear() }}</p>
         </div>
 
         <!-- Panneau formulaire -->
         <div class="form-panel">
             <div class="form-panel-inner">
-                <Link href="/" class="mobile-brand">
-                    <span class="brand-logo-mark brand-logo-mark--sm"><SiteLogo :size="18" /></span>
-                    <span class="brand-logo-text">FreshFeed</span>
+                <Link href="/" class="mobile-brand-mark">
+                    <SiteLogo :size="22" />
                 </Link>
 
                 <div class="form-card">
@@ -39,6 +38,12 @@
                 </div>
 
                 <Link href="/" class="back-link"><i class="ti ti-arrow-left"></i> Retour à l'accueil</Link>
+
+                <a href="https://ed-factory.com/" target="_blank" rel="noopener noreferrer" class="form-ed-credit">
+                    Made by
+                    <img src="/images/ed-logo.png" alt="ED" class="ed-credit-logo" />
+                    Web Factory
+                </a>
             </div>
         </div>
     </div>
@@ -85,7 +90,10 @@ export default {
 }
 .brand-features i { font-size: 18px; color: #fff; flex-shrink: 0; }
 
-.brand-footnote { position: relative; z-index: 2; font-size: 12px; color: rgba(255,255,255,0.55); }
+.brand-footnote {
+    position: relative; z-index: 2; font-size: 12px; color: rgba(255,255,255,0.55);
+    text-align: center; margin: 0;
+}
 
 .form-panel {
     flex: 1; display: flex; align-items: center; justify-content: center;
@@ -93,17 +101,22 @@ export default {
 }
 .form-panel-inner { width: 100%; max-width: 380px; }
 
-.mobile-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; margin-bottom: 28px; }
-.mobile-brand .brand-logo-mark--sm { background: #E7F5EF; color: #1D9E75; }
-.mobile-brand .brand-logo-text { color: #10241D; }
+.mobile-brand-mark { display: inline-flex; margin-bottom: 28px; }
 
 .form-card { margin-bottom: 20px; }
 
 .back-link {
     color: #8FA098; font-size: 13px; text-decoration: none;
-    display: inline-flex; align-items: center; gap: 5px;
+    display: flex; align-items: center; gap: 5px;
 }
 .back-link:hover { color: #6B7B74; }
+
+.form-ed-credit {
+    display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%;
+    color: #ADB6AF; text-decoration: none; font-size: 11.5px; margin-top: 18px; transition: color .15s;
+}
+.form-ed-credit:hover { color: #6B7B74; }
+.ed-credit-logo { height: 18px; width: 18px; object-fit: contain; }
 
 @media (min-width: 900px) {
     .brand-panel { display: flex; }

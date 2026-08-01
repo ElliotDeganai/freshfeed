@@ -1,7 +1,7 @@
 <template>
     <div class="auth-shell">
         <header class="auth-topbar">
-            <Link href="/feed" class="brand"><span class="brand-logo">FreshFeed</span></Link>
+            <!-- <Link href="/feed" class="brand"><span class="brand-logo">{{ $page.props.site.name }}</span></Link> -->
             <div class="auth-topbar-icons">
                 <div class="avatar" :style="{ background: userColor.bg, color: userColor.text }">
                     {{ userInitials }}

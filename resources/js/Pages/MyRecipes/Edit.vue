@@ -230,10 +230,10 @@ export default {
 </script>
 
 <style scoped>
-.page-header { max-width: 900px; margin: 0 auto 18px; }
+.page-header { max-width: 1080px; margin: 0 auto 18px; }
 .page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
-.builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 900px; margin: 0 auto; align-items: start; }
+.builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 1080px; margin: 0 auto; align-items: start; }
 @media (max-width: 800px) { .builder-grid { grid-template-columns: 1fr; } }
 
 .panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 22px; }
