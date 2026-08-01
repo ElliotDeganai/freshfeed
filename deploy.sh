@@ -28,13 +28,13 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
-echo "→ Passage de la propriété à www-data..."
-sudo chown -R www-data:www-data /var/www/freshfeed
-sudo chmod -R 755 /var/www/freshfeed/storage /var/www/freshfeed/bootstrap/cache
-
 echo "→ Reconstruction des caches de production..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
+echo "→ Passage de la propriété à www-data..."
+sudo chown -R www-data:www-data /var/www/freshfeed
+sudo chmod -R 755 /var/www/freshfeed/storage /var/www/freshfeed/bootstrap/cache
 
 echo "✅ Déploiement terminé !"
