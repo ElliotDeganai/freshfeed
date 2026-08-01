@@ -59,14 +59,14 @@ export default {
 </script>
 
 <style scoped>
-.split-shell { min-height: 100vh; display: flex; }
+.split-shell { min-height: 100vh; display: flex; flex-direction: column; }
 
 .brand-panel {
-    display: none;
+    display: flex;
     position: relative; overflow: hidden;
-    width: 45%; padding: 44px 48px;
+    width: 100%; padding: 32px 28px;
     background: linear-gradient(155deg, #1D9E75 0%, #178563 55%, #0F6E56 100%);
-    flex-direction: column; justify-content: space-between;
+    flex-direction: column; justify-content: space-between; gap: 20px;
 }
 .brand-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.08); }
 .brand-blob--a { width: 340px; height: 340px; top: -110px; right: -90px; }
@@ -118,7 +118,15 @@ export default {
 .form-ed-credit:hover { color: #6B7B74; }
 .ed-credit-logo { height: 18px; width: 18px; object-fit: contain; }
 
+@media (max-width: 899px) {
+    .brand-panel { padding: 28px 24px; }
+    .brand-title { font-size: 21px; margin-bottom: 8px; }
+    .brand-subtitle { margin-bottom: 0; }
+    .brand-features { display: none; }
+}
+
 @media (min-width: 900px) {
-    .brand-panel { display: flex; }
+    .split-shell { flex-direction: row; }
+    .brand-panel { width: 45%; padding: 44px 48px; }
 }
 </style>
