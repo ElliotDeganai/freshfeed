@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HomepageController;
+use App\Http\Controllers\Admin\IngredientNutritionController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -65,6 +66,14 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
             Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        });
+
+        // Ingrédients & valeurs nutritionnelles (base de référence pour l'estimation calorique)
+        Route::middleware('permission:manage-nutrition')->group(function () {
+            Route::get('/ingredients', [IngredientNutritionController::class, 'index'])->name('ingredients.index');
+            Route::post('/ingredients', [IngredientNutritionController::class, 'store'])->name('ingredients.store');
+            Route::put('/ingredients/{ingredient}', [IngredientNutritionController::class, 'update'])->name('ingredients.update');
+            Route::delete('/ingredients/{ingredient}', [IngredientNutritionController::class, 'destroy'])->name('ingredients.destroy');
         });
 
         // Paramètres du site

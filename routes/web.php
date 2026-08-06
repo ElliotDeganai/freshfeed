@@ -11,6 +11,7 @@ use App\Http\Controllers\MyRecipesController;
 use App\Http\Controllers\PostShowController;
 use App\Http\Controllers\ProfileAvatarController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\PostRatingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-recipes/{post}/edit', [MyRecipesController::class, 'edit'])->name('my-recipes.edit');
     Route::put('/my-recipes/{post}', [MyRecipesController::class, 'update'])->name('my-recipes.update');
     Route::put('/my-recipes/{post}/status', [MyRecipesController::class, 'toggleStatus'])->name('my-recipes.status');
+    Route::post('/my-recipes/{post}/estimate-calories', [MyRecipesController::class, 'estimateCalories'])->name('my-recipes.estimate-calories');
     Route::delete('/my-recipes/{post}', [MyRecipesController::class, 'destroy'])->name('my-recipes.destroy');
 
     // Étapes — instant-CRUD (voir MyRecipesController)
@@ -75,6 +77,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/u/{user}', [UserProfileController::class, 'show'])->name('users.show');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/posts/{post}/rating', [PostRatingController::class, 'store'])->name('posts.rating.store');
+    Route::delete('/posts/{post}/rating', [PostRatingController::class, 'destroy'])->name('posts.rating.destroy');
+});
 
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';

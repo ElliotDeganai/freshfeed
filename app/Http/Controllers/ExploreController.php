@@ -16,12 +16,14 @@ class ExploreController extends Controller
         $posts = Post::query()
             ->published()
             ->with(['user:id,name', 'categories:id,name'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->when(
                 $request->filled('category'),
                 fn ($q) => $q->whereHas('categories', fn ($c) => $c->where('categories.id', $request->integer('category')))
             )
             ->latest('published_at')
-            ->paginate(10)
+            ->paginate(12)
             ->withQueryString();
 
         // Appelé en fetch() depuis le scroll infini — réponse JSON directe,

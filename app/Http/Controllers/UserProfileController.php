@@ -16,6 +16,8 @@ class UserProfileController extends Controller
         $recipes = Post::query()
             ->where('user_id', $user->id)
             ->published()
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->latest('published_at')
             ->paginate(12);
 

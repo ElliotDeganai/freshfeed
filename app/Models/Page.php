@@ -21,12 +21,9 @@ class Page extends Model
         'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'is_active' => 'boolean',
         ];
-    }
 
     public function sections(): HasMany
     {

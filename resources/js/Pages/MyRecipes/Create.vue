@@ -12,10 +12,10 @@
                 <input v-model="form.title" type="text" class="input" required />
             </label>
 
-            <label class="field">
+            <div class="field">
                 <span>Description</span>
                 <RichTextEditor v-model="form.content" placeholder="Présente ta recette, son origine, une astuce..." />
-            </label>
+            </div>
 
             <label class="field">
                 <span>Calories (optionnel)</span>
@@ -26,6 +26,7 @@
                         <button type="button" class="pill-check" :class="{ on: form.calories_unit === 'ml' }" @click="form.calories_unit = 'ml'">pour 100 ml</button>
                     </div>
                 </div>
+                <p class="field-hint">Laisse vide pour une estimation automatique à partir des ingrédients.</p>
             </label>
 
             <label class="field">
@@ -111,6 +112,7 @@ export default {
 .input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; }
 .input--sm { width: 70px; flex-shrink: 0; }
 .calories-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.field-hint { font-size: 11.5px; color: #8FA098; margin-top: 2px; }
 .pill-toggle { display: flex; gap: 6px; }
 .input--grow { flex: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }

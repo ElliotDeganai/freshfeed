@@ -19,6 +19,7 @@
                         <span class="post-meta">{{ timeAgo(post.published_at) }} · {{ post.categories.map(c => c.name).join(', ') || 'Recette' }}</span>
                     </div>
                     <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
+                    <span v-if="post.ratings_count" class="rating-pill"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }} <span class="rating-pill-count">({{ post.ratings_count }})</span></span>
                 </div>
 
                 <Link :href="route('posts.show', post.id)" class="post-image-link">
@@ -139,6 +140,12 @@ export default {
     display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
     color: #993C1D; background: #FAECE7; padding: 4px 10px; border-radius: 999px; flex-shrink: 0;
 }
+.rating-pill {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+    color: #854F0B; background: #FAEEDA; padding: 4px 10px; border-radius: 999px; flex-shrink: 0;
+}
+.rating-pill i { color: #E3B23C; }
+.rating-pill-count { font-weight: 400; opacity: .8; }
 
 .post-image-link { display: block; }
 .post-image { height: 220px; background: #F0F1F0; }

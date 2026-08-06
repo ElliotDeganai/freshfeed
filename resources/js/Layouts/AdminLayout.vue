@@ -1,87 +1,106 @@
 <template>
     <div class="admin-shell">
-        <header class="admin-topbar">
-            <div class="admin-topbar-inner">
-                <Link href="/" class="admin-brand">
-                    <SiteLogo :size="26" />
-                    <span class="admin-brand-logo">{{ $page.props.site.name }}</span>
-                    <span class="admin-brand-tag">admin</span>
+        <transition name="overlay-fade">
+            <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+        </transition>
+
+        <aside class="admin-sidebar" :class="{ open: sidebarOpen }">
+            <Link :href="route('admin.dashboard')" class="sidebar-brand">
+                <SiteLogo :size="24" />
+                <span class="sidebar-brand-name">{{ $page.props.site.name }}</span>
+                <span class="sidebar-brand-tag">admin</span>
+            </Link>
+
+            <nav class="sidebar-nav">
+                <Link :href="route('admin.dashboard')" class="sidebar-link" :class="{ on: isActive('admin.dashboard') }">
+                    <i class="ti ti-layout-dashboard"></i> Tableau de bord
                 </Link>
+                <Link v-if="can('manage-posts') || can('manage-own-posts')"
+                    :href="route('admin.posts.index')" class="sidebar-link" :class="{ on: isActive('admin.posts.*') }">
+                    <i class="ti ti-tools-kitchen-2"></i> Recettes
+                </Link>
+                <Link v-if="can('manage-categories')"
+                    :href="route('admin.categories.index')" class="sidebar-link" :class="{ on: isActive('admin.categories.*') }">
+                    <i class="ti ti-tags"></i> Catégories
+                </Link>
+                <Link v-if="can('manage-pages')"
+                    :href="route('admin.pages.index')" class="sidebar-link" :class="{ on: isActive('admin.pages.*') }">
+                    <i class="ti ti-file-stack"></i> Pages
+                </Link>
+                <Link v-if="can('manage-users')"
+                    :href="route('admin.users.index')" class="sidebar-link" :class="{ on: isActive('admin.users.*') }">
+                    <i class="ti ti-users"></i> Utilisateurs
+                </Link>
+                <Link v-if="can('manage-settings')"
+                    :href="route('admin.homepage.index')" class="sidebar-link" :class="{ on: isActive('admin.homepage.*') }">
+                    <i class="ti ti-home"></i> Accueil
+                </Link>
+                <Link v-if="can('manage-settings')"
+                    :href="route('admin.settings.index')" class="sidebar-link" :class="{ on: isActive('admin.settings.*') }">
+                    <i class="ti ti-settings"></i> Paramètres
+                </Link>
+            </nav>
 
-                <nav class="admin-pills">
-                    <Link :href="route('admin.dashboard')" class="admin-pill" :class="{ on: isActive('admin.dashboard') }">
-                        <i class="ti ti-layout-dashboard"></i> Tableau de bord
-                    </Link>
-                    <Link v-if="can('manage-posts') || can('manage-own-posts')"
-                        :href="route('admin.posts.index')" class="admin-pill" :class="{ on: isActive('admin.posts.*') }">
-                        <i class="ti ti-tools-kitchen-2"></i> Recettes
-                    </Link>
-                    <Link v-if="can('manage-categories')"
-                        :href="route('admin.categories.index')" class="admin-pill" :class="{ on: isActive('admin.categories.*') }">
-                        <i class="ti ti-tags"></i> Catégories
-                    </Link>
-                    <Link v-if="can('manage-pages')"
-                        :href="route('admin.pages.index')" class="admin-pill" :class="{ on: isActive('admin.pages.*') }">
-                        <i class="ti ti-file-stack"></i> Pages
-                    </Link>
-                    <Link v-if="can('manage-users')"
-                        :href="route('admin.users.index')" class="admin-pill" :class="{ on: isActive('admin.users.*') }">
-                        <i class="ti ti-users"></i> Utilisateurs
-                    </Link>
-                    <Link v-if="can('manage-settings')"
-                        :href="route('admin.homepage.index')" class="admin-pill" :class="{ on: isActive('admin.homepage.*') }">
-                        <i class="ti ti-home"></i> Accueil
+            <Link :href="route('feed')" class="sidebar-link sidebar-link--muted">
+                <i class="ti ti-arrow-back-up"></i> Retour au site
+            </Link>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-topbar-inner">
+                    <button class="sidebar-toggle-btn" @click="sidebarOpen = !sidebarOpen">
+                        <i class="ti ti-menu-2"></i>
+                    </button>
+
+                    <Link :href="route('admin.dashboard')" class="admin-brand-mobile">
+                        <SiteLogo :size="24" />
                     </Link>
 
-                    <Link v-if="can('manage-settings')"
-                        :href="route('admin.settings.index')" class="admin-pill" :class="{ on: isActive('admin.settings.*') }">
-                        <i class="ti ti-settings"></i> Paramètres
-                    </Link>
-                </nav>
+                    <div class="admin-topbar-icons">
+                        <div class="account-menu" ref="accountMenu">
+                            <button class="admin-user-avatar-btn" @click="menuOpen = !menuOpen">
+                                <UserAvatar :user="$page.props.auth.user" :size="32" />
+                            </button>
 
-                <div class="admin-topbar-icons">
-                    <div class="account-menu" ref="accountMenu">
-                        <button class="admin-user-avatar-btn" @click="menuOpen = !menuOpen">
-                            <UserAvatar :user="$page.props.auth.user" :size="32" />
-                        </button>
-
-                        <transition name="menu-fade">
-                            <div v-if="menuOpen" class="account-dropdown">
-                                <div class="account-dropdown-name">{{ $page.props.auth.user.name }}</div>
-                                <Link :href="route('feed')" class="account-dropdown-link">
-                                    <i class="ti ti-arrow-back-up"></i> Retour au site
-                                </Link>
-                                <Link :href="route('logout')" method="post" as="button" class="account-dropdown-link account-dropdown-link--danger">
-                                    <i class="ti ti-logout"></i> Déconnexion
-                                </Link>
-                            </div>
-                        </transition>
+                            <transition name="menu-fade">
+                                <div v-if="menuOpen" class="account-dropdown">
+                                    <div class="account-dropdown-name">{{ $page.props.auth.user.name }}</div>
+                                    <Link :href="route('feed')" class="account-dropdown-link">
+                                        <i class="ti ti-arrow-back-up"></i> Retour au site
+                                    </Link>
+                                    <Link :href="route('logout')" method="post" as="button" class="account-dropdown-link account-dropdown-link--danger">
+                                        <i class="ti ti-logout"></i> Déconnexion
+                                    </Link>
+                                </div>
+                            </transition>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <div class="admin-page-head">
-            <h1 class="admin-page-title"><slot name="title">Admin</slot></h1>
-            <div class="admin-role-chip">{{ primaryRole }}</div>
+            <div class="admin-page-head">
+                <h1 class="admin-page-title"><slot name="title">Admin</slot></h1>
+                <div class="admin-role-chip">{{ primaryRole }}</div>
+            </div>
+
+            <transition name="admin-flash">
+                <div v-if="$page.props.flash?.success" class="admin-flash admin-flash--success">
+                    <i class="ti ti-check"></i> {{ $page.props.flash.success }}
+                </div>
+            </transition>
+            <transition name="admin-flash">
+                <div v-if="$page.props.flash?.error" class="admin-flash admin-flash--error">
+                    <i class="ti ti-alert-circle"></i> {{ $page.props.flash.error }}
+                </div>
+            </transition>
+
+            <main class="admin-content">
+                <slot />
+            </main>
+
+            <SiteFooter />
         </div>
-
-        <transition name="admin-flash">
-            <div v-if="$page.props.flash?.success" class="admin-flash admin-flash--success">
-                <i class="ti ti-check"></i> {{ $page.props.flash.success }}
-            </div>
-        </transition>
-        <transition name="admin-flash">
-            <div v-if="$page.props.flash?.error" class="admin-flash admin-flash--error">
-                <i class="ti ti-alert-circle"></i> {{ $page.props.flash.error }}
-            </div>
-        </transition>
-
-        <main class="admin-content">
-            <slot />
-        </main>
-
-        <SiteFooter />
     </div>
 </template>
 
@@ -96,6 +115,7 @@ export default {
     data() {
         return {
             menuOpen: false,
+            sidebarOpen: false,
         };
     },
     computed: {
@@ -131,28 +151,48 @@ export default {
 </script>
 
 <style scoped>
-.admin-shell { min-height: 100vh; background: #F7F8F6; }
+.admin-shell {
+    min-height: 100vh; display: flex;
+    background-color: #F3FAF6;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='none' stroke='%231D9E75' stroke-width='1.4' opacity='0.05'%3E%3Cpath d='M20 150c0-40 20-65 45-80'/%3E%3Cpath d='M30 110c8-4 14-2 18 4'/%3E%3Cpath d='M42 90c8-4 14-1 17 5'/%3E%3Cpath d='M54 70c7-4 13-1 16 5'/%3E%3Cpath d='M140 30c-25 5-40 22-44 48'/%3E%3Cpath d='M115 55c-3 8-1 14 5 17'/%3E%3Cpath d='M100 70c-3 8 0 14 6 17'/%3E%3Ccircle cx='150' cy='140' r='9'/%3E%3Cpath d='M150 131v-10M150 149v10M141 140h-10M159 140h10'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+/* ---------- Sidebar ---------- */
+.admin-sidebar {
+    width: 232px; flex-shrink: 0; background: #fff; border-right: 0.5px solid #E7E9E7;
+    display: flex; flex-direction: column; padding: 18px 14px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 8px; padding: 6px 10px 20px; text-decoration: none; }
+.sidebar-brand-name { font-size: 15px; font-weight: 500; color: #10241D; letter-spacing: -0.2px; }
+.sidebar-brand-tag { font-size: 10px; color: #8FA098; text-transform: uppercase; letter-spacing: .04em; margin-left: -2px; }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.sidebar-link {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px;
+    font-size: 13.5px; color: #4B5A54; text-decoration: none;
+}
+.sidebar-link i { font-size: 17px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-link:hover { background: #F0F1F0; }
+.sidebar-link.on { background: #E7F5EF; color: #146C4E; font-weight: 500; }
+.sidebar-link--muted { color: #8FA098; border-top: 0.5px solid #F0F1F0; margin-top: 10px; padding-top: 14px; }
+
+.sidebar-overlay { display: none; }
+
+/* ---------- Main column ---------- */
+.admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 .admin-topbar { background: #fff; border-bottom: 0.5px solid #E7E9E7; position: sticky; top: 0; z-index: 10; }
-.admin-topbar-inner {
-    max-width: 1180px; margin: 0 auto; padding: 0 24px; height: 60px;
-    display: flex; align-items: center; gap: 24px;
+.admin-topbar-inner { padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 14px; }
+.sidebar-toggle-btn {
+    display: none; width: 34px; height: 34px; border-radius: 9px; border: none; background: transparent;
+    color: #4B5A54; font-size: 18px; align-items: center; justify-content: center; cursor: pointer;
 }
-.admin-brand { display: flex; align-items: baseline; gap: 6px; text-decoration: none; }
-.admin-brand-logo { font-size: 17px; font-weight: 500; color: #1D9E75; letter-spacing: -0.3px; }
-.admin-brand-tag { font-size: 11px; color: #8FA098; text-transform: uppercase; letter-spacing: .04em; }
+.sidebar-toggle-btn:hover { background: #F0F1F0; }
+.admin-brand-mobile { display: none; }
 
-.admin-pills { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
-.admin-pill {
-    display: flex; align-items: center; gap: 6px; white-space: nowrap;
-    padding: 7px 14px; border-radius: 20px; font-size: 13px; color: #6B7B74;
-    text-decoration: none; border: 0.5px solid transparent;
-}
-.admin-pill i { font-size: 15px; }
-.admin-pill:hover { background: #F0F1F0; }
-.admin-pill.on { background: #1D9E75; color: #fff; font-weight: 500; }
-
-.admin-topbar-icons { display: flex; align-items: center; gap: 10px; }
+.admin-topbar-icons { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .account-menu { position: relative; }
 .admin-user-avatar-btn {
     padding: 0; border: none; background: transparent; cursor: pointer; display: flex; border-radius: 50%;
@@ -176,10 +216,7 @@ export default {
 .menu-fade-enter-active, .menu-fade-leave-active { transition: opacity .12s, transform .12s; }
 .menu-fade-enter-from, .menu-fade-leave-to { opacity: 0; transform: translateY(-4px); }
 
-.admin-page-head {
-    max-width: 1180px; margin: 0 auto; padding: 24px 24px 0;
-    display: flex; align-items: center; gap: 12px;
-}
+.admin-page-head { padding: 24px 24px 0; display: flex; align-items: center; gap: 12px; }
 .admin-page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 .admin-role-chip {
     background: #E7F5EF; color: #146C4E; font-size: 11px; font-weight: 600;
@@ -187,7 +224,7 @@ export default {
 }
 
 .admin-flash {
-    max-width: 1180px; margin: 14px auto 0; padding: 10px 24px;
+    margin: 14px 24px 0; padding: 10px 16px;
     display: flex; align-items: center; gap: 8px; font-size: 13.5px; border-radius: 10px;
 }
 .admin-flash--success { background: #E7F5EF; color: #146C4E; }
@@ -195,16 +232,26 @@ export default {
 .admin-flash-enter-active, .admin-flash-leave-active { transition: opacity .2s; }
 .admin-flash-enter-from, .admin-flash-leave-to { opacity: 0; }
 
-.admin-content { max-width: 1180px; margin: 0 auto; padding: 20px 24px 60px; }
+.admin-content { padding: 20px 24px 60px; flex: 1; }
 
-@media (max-width: 860px) {
-    .admin-topbar-inner { padding: 0 16px; gap: 14px; }
-    .admin-brand-tag { display: none; }
-    .admin-pill { padding: 7px 11px; font-size: 12.5px; }
-    .admin-pill span, .admin-pill { white-space: nowrap; }
+/* ---------- Mobile : sidebar devient un tiroir ---------- */
+@media (max-width: 900px) {
+    .admin-sidebar {
+        position: fixed; left: 0; top: 0; z-index: 30;
+        transform: translateX(-100%); transition: transform .2s ease;
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+    .admin-sidebar.open { transform: translateX(0); box-shadow: 10px 0 30px rgba(16,36,29,.15); }
+    .sidebar-overlay {
+        display: block; position: fixed; inset: 0; background: rgba(16,36,29,.4); z-index: 25;
+    }
+    .overlay-fade-enter-active, .overlay-fade-leave-active { transition: opacity .2s; }
+    .overlay-fade-enter-from, .overlay-fade-leave-to { opacity: 0; }
+
+    .sidebar-toggle-btn { display: flex; }
+    .admin-brand-mobile { display: flex; }
+
     .admin-page-head, .admin-content, .admin-flash { padding-left: 16px; padding-right: 16px; }
-}
-@media (max-width: 560px) {
-    .admin-pill i { font-size: 15px; }
+    .admin-topbar-inner { padding: 0 16px; }
 }
 </style>

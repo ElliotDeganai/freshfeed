@@ -14,13 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Post extends Model
 {
     protected $fillable = [
-        'user_id', 'title', 'status', 'published_at', 'content', 'image_path','calories','calories_unit',
+        'user_id', 'title', 'status', 'published_at', 'content', 'image_path','calories', 'calories_unit', 'calories_is_auto', 'calories_breakdown',
     ];
 
-    protected function casts(): array
-    {
-        return ['published_at' => 'datetime'];
-    }
+    protected $casts = ['published_at' => 'datetime', 'calories_breakdown' => 'array',];
 
     public function user(): BelongsTo
     {
@@ -72,5 +69,10 @@ class Post extends Model
     public function steps()
     {
         return $this->hasMany(PostStep::class)->orderBy('order');
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(PostRating::class);
     }
 }

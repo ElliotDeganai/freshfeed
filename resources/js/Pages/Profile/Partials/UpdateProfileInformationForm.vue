@@ -12,11 +12,11 @@
             <p v-if="form.errors.email" class="field-error">{{ form.errors.email }}</p>
         </label>
 
-        <label class="field">
+        <div class="field">
             <span>Description</span>
             <RichTextEditor v-model="form.bio" placeholder="Parle un peu de toi, de ta cuisine..." />
             <p v-if="form.errors.bio" class="field-error">{{ form.errors.bio }}</p>
-        </label>
+        </div>
 
         <div v-if="mustVerifyEmail && !$page.props.auth.user.email_verified_at" class="verify-notice">
             <p>Ton email n'est pas encore vérifié.

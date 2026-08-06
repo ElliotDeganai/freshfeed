@@ -15,8 +15,10 @@ class FeedController extends Controller
         $posts = Post::query()
             ->published()
             ->with(['user:id,name,avatar_path', 'categories:id,name'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->latest('published_at')
-            ->paginate(10);
+            ->paginate(12);
 
         // Appelé en fetch() depuis le scroll infini — réponse JSON directe,
         // sans passer par Inertia, donc aucune manipulation d'URL/historique possible.

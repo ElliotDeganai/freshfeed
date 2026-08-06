@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FreshFeedRolesAndPermissionsSeeder::class,
             FreshFeedTestUsersSeeder::class,
+            IngredientNutritionSeeder::class, // base de référence pour l'estimation calorique
             FreshFeedDemoRecipesSeeder::class,
         ]);
     }

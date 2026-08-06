@@ -18,6 +18,12 @@ class PostShowController extends Controller
 
         $post->load(['user:id,name,avatar_path', 'categories:id,name', 'ingredients', 'steps.images']);
 
+        $ratingsCount = $post->ratings()->count();
+        $ratingsAverage = $ratingsCount ? round($post->ratings()->avg('rating'), 1) : null;
+        $myRating = Auth::check()
+            ? $post->ratings()->where('user_id', Auth::id())->value('rating')
+            : null;
+
         return Inertia::render('Post/Show', [
             'post' => [
                 ...$post->toArray(),
@@ -30,6 +36,9 @@ class PostShowController extends Controller
                 ),
             ],
             'isOwner' => $isOwner,
+            'ratingsAverage' => $ratingsAverage,
+            'ratingsCount' => $ratingsCount,
+            'myRating' => $myRating,
         ]);
     }
 }

@@ -26,6 +26,7 @@ class FreshFeedRolesAndPermissionsSeeder extends Seeder
             'manage-pages',
             'manage-users',
             'manage-settings',
+            'manage-nutrition',    // base de référence pour l'estimation calorique
         ];
 
         foreach ($permissions as $permission) {

@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostIngredient;
 use App\Models\PostStep;
 use App\Models\PostStepImage;
+use App\Services\CalorieEstimatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +26,17 @@ use Inertia\Response;
  */
 class MyRecipesController extends Controller
 {
+    public function __construct(private CalorieEstimatorService $calorieEstimator)
+    {
+    }
+
     public function index(Request $request): Response|JsonResponse
     {
         $posts = Post::query()
             ->where('user_id', Auth::id())
             ->with('categories:id,name')
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->latest()
             ->paginate(12);
 
@@ -77,6 +84,7 @@ class MyRecipesController extends Controller
             'content' => $data['content'] ?? null,
             'calories' => $data['calories'] ?? null,
             'calories_unit' => $data['calories_unit'] ?? null,
+            'calories_is_auto' => false,
             'user_id' => Auth::id(),
             'status' => $publish ? 'published' : 'draft',
             'published_at' => $publish ? now() : null,
@@ -100,8 +108,16 @@ class MyRecipesController extends Controller
             ]);
         }
 
-        return redirect()->route('my-recipes.edit', $post)
-            ->with('success', 'Recette créée. Ajoute maintenant ses étapes.');
+        // 🔒 Fonctionnalité "estimation automatique des calories" masquée temporairement
+        // (code conservé pour réactivation future — voir aussi Edit.vue, Create.vue,
+        // AdminLayout.vue "Ingrédients"). Décommenter pour réactiver :
+        //
+        // if (empty($data['calories']) && ! empty($data['ingredients'])) {
+        //     $this->applyCalorieEstimate($post, $data['ingredients']);
+        // }
+
+        return redirect()->route('my-recipes.index')
+            ->with('success', 'Recette créée.');
     }
 
     public function edit(Post $post): Response
@@ -137,6 +153,8 @@ class MyRecipesController extends Controller
             'content' => $data['content'] ?? null,
             'calories' => $data['calories'] ?? null,
             'calories_unit' => $data['calories_unit'] ?? null,
+            'calories_is_auto' => false,
+            'calories_breakdown' => null,
         ]);
 
         $post->save();
@@ -161,7 +179,14 @@ class MyRecipesController extends Controller
             ]);
         }
 
-        return redirect()->route('my-recipes.edit', $post)->with('success', 'Recette mise à jour.');
+        // 🔒 Fonctionnalité "estimation automatique des calories" masquée temporairement
+        // (voir store() pour le détail). Décommenter pour réactiver :
+        //
+        // if (empty($data['calories']) && ! empty($data['ingredients'])) {
+        //     $this->applyCalorieEstimate($post, $data['ingredients']);
+        // }
+
+        return redirect()->route('my-recipes.index')->with('success', 'Recette mise à jour.');
     }
 
     public function toggleStatus(Request $request, Post $post)
@@ -326,6 +351,46 @@ class MyRecipesController extends Controller
         if ($step->video_path) {
             Storage::disk('public')->delete($step->video_path);
         }
+    }
+
+    /**
+     * Route dédiée pour redéclencher l'estimation manuellement depuis l'écran d'édition
+     * (utile si les ingrédients ont changé sans repasser par le formulaire principal).
+     */
+    public function estimateCalories(Post $post)
+    {
+        $this->authorizeOwner($post);
+
+        $ingredients = $post->ingredients()->get(['name', 'amount', 'unit'])->toArray();
+        $applied = $this->applyCalorieEstimate($post, $ingredients);
+
+        return back()->with(
+            $applied ? 'success' : 'error',
+            $applied
+                ? 'Calories estimées à partir des ingrédients.'
+                : "Estimation impossible — trop peu d'ingrédients reconnus avec une quantité exploitable."
+        );
+    }
+
+    /**
+     * @param  array<int, array{amount?: ?string, unit?: ?string, name: string}>  $ingredients
+     */
+    private function applyCalorieEstimate(Post $post, array $ingredients): bool
+    {
+        $estimate = $this->calorieEstimator->estimate($ingredients);
+
+        if (! $estimate) {
+            return false;
+        }
+
+        $post->update([
+            'calories' => $estimate['calories'],
+            'calories_unit' => $estimate['unit'],
+            'calories_is_auto' => true,
+            'calories_breakdown' => $estimate['breakdown'],
+        ]);
+
+        return true;
     }
 
     private function authorizeOwner(Post $post): void

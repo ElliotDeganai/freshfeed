@@ -14,12 +14,12 @@
                     <input v-model="postForm.title" type="text" class="input" required />
                 </label>
 
-                <label class="field">
+                <div class="field">
                     <span>Description</span>
                     <RichTextEditor v-model="postForm.content" />
-                </label>
+                </div>
 
-                <label class="field">
+                <div class="field">
                     <span>Calories (optionnel)</span>
                     <div class="calories-row">
                         <input v-model.number="postForm.calories" type="number" min="0" class="input input--sm" />
@@ -28,7 +28,39 @@
                             <button type="button" class="pill-check" :class="{ on: postForm.calories_unit === 'ml' }" @click="postForm.calories_unit = 'ml'">pour 100 ml</button>
                         </div>
                     </div>
-                </label>
+
+                    <!-- 🔒 Estimation automatique des calories — masquée temporairement.
+                         Code conservé pour réactivation future (voir aussi Create.vue,
+                         MyRecipesController.php, AdminLayout.vue "Ingrédients").
+
+                    <div class="calories-meta">
+                        <span v-if="post.calories_is_auto" class="auto-badge"><i class="ti ti-wand"></i> Estimation automatique</span>
+                        <button type="button" class="link-btn" @click="recalculateCalories">Recalculer depuis les ingrédients</button>
+                        <button v-if="post.calories_is_auto && post.calories_breakdown?.length" type="button" class="link-btn" @click="detailOpen = !detailOpen">
+                            {{ detailOpen ? 'Masquer le détail' : 'Voir le détail du calcul' }}
+                            <i class="ti" :class="detailOpen ? 'ti-chevron-up' : 'ti-chevron-down'"></i>
+                        </button>
+                    </div>
+                    <p class="field-hint">Laisse le champ vide et enregistre pour une estimation automatique.</p>
+
+                    <transition name="detail-collapse">
+                        <div v-if="detailOpen && post.calories_breakdown?.length" class="calories-detail">
+                            <div v-for="(item, i) in post.calories_breakdown" :key="i" class="detail-row" :class="{ 'detail-row--skipped': item.status === 'skipped' }">
+                                <span class="detail-label">{{ item.label }}</span>
+                                <template v-if="item.status === 'matched'">
+                                    <span class="detail-matched">reconnu comme "{{ item.matched_as }}"<span v-if="item.source === 'api'" class="detail-api-tag">API</span></span>
+                                    <span class="detail-calc">{{ item.grams }}g × {{ item.kcal_per_100 }} kcal/100 = <strong>{{ item.kcal_contributed }} kcal</strong></span>
+                                </template>
+                                <span v-else class="detail-reason"><i class="ti ti-alert-triangle"></i> ignoré — {{ item.reason }}</span>
+                            </div>
+                            <p class="detail-footnote">
+                                Seuls les ingrédients reconnus avec une quantité exploitable comptent dans le total.
+                                Corrige une valeur dans <Link :href="route('admin.ingredients.index')">Ingrédients (admin)</Link> si besoin.
+                            </p>
+                        </div>
+                    </transition>
+                    -->
+                </div>
 
                 <label class="field">
                     <span>Catégories</span>
@@ -136,17 +168,18 @@
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import RichTextEditor from '@/Components/RichTextEditor.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 export default {
     layout: null,
-    components: { AppLayout, RichTextEditor, Head },
+    components: { AppLayout, RichTextEditor, Head, Link },
     props: {
         post: Object,
         categories: Array,
     },
     data() {
         return {
+            detailOpen: false,
             postForm: {
                 title: this.post.title,
                 content: this.post.content,
@@ -169,6 +202,9 @@ export default {
     methods: {
         onCoverChange(e) {
             this.postForm.image = e.target.files[0] ?? null;
+        },
+        recalculateCalories() {
+            router.post(route('my-recipes.estimate-calories', this.post.id), {}, { preserveScroll: true });
         },
         submitPost() {
             const ingredients = this.postForm.ingredients.filter((ing) => ing.name.trim());
@@ -244,6 +280,41 @@ export default {
 .input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; }
 .input--sm { width: 70px; flex-shrink: 0; }
 .calories-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.calories-meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.auto-badge {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+    color: #534AB7; background: #EEEDFE; padding: 3px 9px; border-radius: 999px;
+}
+.link-btn {
+    background: none; border: none; color: #1D9E75; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    padding: 0; display: inline-flex; align-items: center; gap: 3px;
+}
+.link-btn:hover { text-decoration: underline; }
+.field-hint { font-size: 11.5px; color: #8FA098; margin-top: 6px; }
+
+.calories-detail {
+    margin-top: 10px; border: 0.5px solid #E7E9E7; border-radius: 12px; padding: 12px 14px; background: #FAFBFA;
+}
+.detail-row {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px;
+    padding: 7px 0; border-top: 0.5px solid #EEEFEC; font-size: 12px;
+}
+.detail-row:first-child { border-top: none; padding-top: 0; }
+.detail-label { font-weight: 500; color: #10241D; min-width: 130px; }
+.detail-matched { color: #6B7B74; }
+.detail-api-tag {
+    font-size: 9.5px; font-weight: 600; color: #534AB7; background: #EEEDFE;
+    padding: 1px 6px; border-radius: 999px; margin-left: 5px;
+}
+.detail-calc { color: #4B5A54; margin-left: auto; white-space: nowrap; }
+.detail-calc strong { color: #146C4E; }
+.detail-row--skipped { opacity: .75; }
+.detail-reason { color: #993C1D; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; }
+.detail-footnote { font-size: 11px; color: #8FA098; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid #EEEFEC; line-height: 1.5; }
+.detail-footnote a { color: #1D9E75; }
+
+.detail-collapse-enter-active, .detail-collapse-leave-active { transition: opacity .15s; }
+.detail-collapse-enter-from, .detail-collapse-leave-to { opacity: 0; }
 .pill-toggle { display: flex; gap: 6px; }
 .input--grow { flex: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }

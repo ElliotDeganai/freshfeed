@@ -14,7 +14,6 @@
             contenteditable="true"
             :data-placeholder="placeholder"
             @input="onInput"
-            @blur="onInput"
         ></div>
     </div>
 </template>
@@ -27,19 +26,17 @@ export default {
     },
     emits: ['update:modelValue'],
     mounted() {
-        this.$refs.editor.innerHTML = this.modelValue || '';
-    },
-    watch: {
-        modelValue(newVal) {
-            if (newVal !== this.$refs.editor.innerHTML && document.activeElement !== this.$refs.editor) {
-                this.$refs.editor.innerHTML = newVal || '';
-            }
-        },
+        // Initialisation unique — on ne resynchronise plus jamais innerHTML depuis
+        // modelValue après coup, pour ne jamais risquer de couper la frappe en cours
+        // (écrire dans innerHTML replace tout le contenu et fait perdre le curseur).
+        if (this.modelValue) {
+            this.$refs.editor.innerHTML = this.modelValue;
+        }
     },
     methods: {
         exec(command, value = null) {
-            document.execCommand(command, false, value);
             this.$refs.editor.focus();
+            document.execCommand(command, false, value);
             this.onInput();
         },
         onInput() {

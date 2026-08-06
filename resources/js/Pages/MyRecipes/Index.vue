@@ -28,6 +28,7 @@
                     <div class="recipe-tags">
                         <span v-for="cat in post.categories" :key="cat.id" class="tag-pill">{{ cat.name }}</span>
                         <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
+                        <span v-if="post.ratings_count" class="rating-pill"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }} ({{ post.ratings_count }})</span>
                     </div>
                 </div>
 
@@ -155,6 +156,11 @@ export default {
     display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
     color: #993C1D; background: #FAECE7; padding: 2px 9px; border-radius: 999px;
 }
+.rating-pill {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+    color: #854F0B; background: #FAEEDA; padding: 2px 9px; border-radius: 999px;
+}
+.rating-pill i { color: #E3B23C; }
 
 .badge { font-size: 10.5px; padding: 3px 10px; border-radius: 999px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
 .badge--green { background: #E7F5EF; color: #146C4E; }

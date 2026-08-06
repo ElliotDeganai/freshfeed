@@ -21,13 +21,10 @@ class PageSection extends Model
         'is_active',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'settings' => 'array',
             'is_active' => 'boolean',
         ];
-    }
 
     public const TYPES = [
         'hero' => 'Hero (grande bannière)',
