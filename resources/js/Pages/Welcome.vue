@@ -218,7 +218,7 @@ export default {
 .welcome-shell {
     min-height: 100vh;
     background-color: #fff;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='none' stroke='%231D9E75' stroke-width='1.4' opacity='0.05'%3E%3Cpath d='M20 150c0-40 20-65 45-80'/%3E%3Cpath d='M30 110c8-4 14-2 18 4'/%3E%3Cpath d='M42 90c8-4 14-1 17 5'/%3E%3Cpath d='M54 70c7-4 13-1 16 5'/%3E%3Cpath d='M140 30c-25 5-40 22-44 48'/%3E%3Cpath d='M115 55c-3 8-1 14 5 17'/%3E%3Cpath d='M100 70c-3 8 0 14 6 17'/%3E%3Ccircle cx='150' cy='140' r='9'/%3E%3Cpath d='M150 131v-10M150 149v10M141 140h-10M159 140h10'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url('/images/pattern-leaves.svg');
     background-repeat: repeat;
 }
 
