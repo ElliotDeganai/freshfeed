@@ -1,6 +1,7 @@
 <script>
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLogo from '@/Components/SiteLogo.vue';
+import SiteFooter from '@/Components/SiteFooter.vue';
 
 // Repli utilisé tant qu'aucune image n'a été ajoutée depuis l'admin
 // (Admin > Accueil), et couleurs/icônes de repli pour la galerie d'aperçu.
@@ -44,7 +45,7 @@ const FEATURES = [
 ];
 
 export default {
-    components: { Head, Link, SiteLogo },
+    components: { Head, Link, SiteLogo, SiteFooter },
     props: {
         canLogin: { type: Boolean, default: true },
         canRegister: { type: Boolean, default: true },
@@ -209,20 +210,17 @@ export default {
             </Link>
         </section>
 
-        <footer class="welcome-footer">
-            <a href="https://ed-factory.com/" target="_blank" rel="noopener noreferrer" class="ed-credit">
-                Made by
-                <img src="/images/ed-logo.png" alt="ED" class="ed-credit-logo" />
-                Web Factory
-            </a>
-            <div class="footer-divider"></div>
-            <p>{{ siteName }} — {{ new Date().getFullYear() }}</p>
-        </footer>
+        <SiteFooter />
     </div>
 </template>
 
 <style scoped>
-.welcome-shell { min-height: 100vh; background: #fff; }
+.welcome-shell {
+    min-height: 100vh;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='none' stroke='%231D9E75' stroke-width='1.4' opacity='0.05'%3E%3Cpath d='M20 150c0-40 20-65 45-80'/%3E%3Cpath d='M30 110c8-4 14-2 18 4'/%3E%3Cpath d='M42 90c8-4 14-1 17 5'/%3E%3Cpath d='M54 70c7-4 13-1 16 5'/%3E%3Cpath d='M140 30c-25 5-40 22-44 48'/%3E%3Cpath d='M115 55c-3 8-1 14 5 17'/%3E%3Cpath d='M100 70c-3 8 0 14 6 17'/%3E%3Ccircle cx='150' cy='140' r='9'/%3E%3Cpath d='M150 131v-10M150 149v10M141 140h-10M159 140h10'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
 
 .welcome-topbar {
     border-bottom: 0.5px solid #EEEFEC;
@@ -310,15 +308,7 @@ export default {
 .final-cta-title { font-size: 24px; font-weight: 500; color: #10241D; letter-spacing: -0.4px; margin-bottom: 8px; }
 .final-cta-text { font-size: 13.5px; color: #6B7B74; margin-bottom: 24px; }
 
-.welcome-footer { text-align: center; padding: 24px; font-size: 12px; color: #8FA098; border-top: 0.5px solid #EEEFEC; }
-.welcome-footer p { margin: 0; }
-.ed-credit {
-    display: inline-flex; align-items: center; gap: 6px; color: #8FA098; text-decoration: none;
-    font-size: 12px; transition: color .15s;
-}
-.ed-credit:hover { color: #4B5A54; }
-.ed-credit-logo { height: 24px; width: 24px; object-fit: contain; }
-.footer-divider { width: 96px; height: 1px; background: #EEEFEC; margin: 12px auto; }
+
 
 @media (max-width: 900px) {
     .features-grid { grid-template-columns: repeat(2, 1fr); }
