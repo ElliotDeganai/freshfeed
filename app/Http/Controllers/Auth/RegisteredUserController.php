@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Notifications\NewUserRegisteredNotification;
+use Illuminate\Support\Facades\Notification;
 
 class RegisteredUserController extends Controller
 {
@@ -45,6 +47,7 @@ class RegisteredUserController extends Controller
 
         // ⬇️ Ligne à ajouter — juste après la création, avant event(new Registered($user))
         $user->assignRole('contributor');
+        Notification::send(User::role('admin')->get(), new NewUserRegisteredNotification($user));
 
         event(new Registered($user));
 

@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // Utilisateurs & rôles
         Route::middleware('permission:manage-users')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
             Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
         });

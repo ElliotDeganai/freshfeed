@@ -104,10 +104,7 @@ export default {
                         Mon espace
                     </Link>
                     <template v-else>
-                        <Link :href="route('login')" class="btn-ghost">Connexion</Link>
-                        <Link v-if="canRegister" :href="route('register')" class="btn-primary">
-                            S'inscrire
-                        </Link>
+                        <Link :href="route('login')" class="btn-primary">Connexion</Link>
                     </template>
                 </nav>
             </div>
@@ -119,8 +116,8 @@ export default {
                 <div v-if="heroBadge" class="hero-badge"><i class="ti ti-tools-kitchen-2"></i> {{ heroBadge }}</div>
                 <h1 class="intro-title">{{ heroTitle }}</h1>
                 <p class="intro-text">{{ heroSubtitle }}</p>
-                <Link v-if="!$page.props.auth.user" :href="route('register')" class="btn-primary btn-lg">
-                    Rejoindre {{ siteName }} <i class="ti ti-arrow-right"></i>
+                <Link v-if="!$page.props.auth.user" :href="route('login')" class="btn-primary btn-lg">
+                    Se connecter <i class="ti ti-arrow-right"></i>
                 </Link>
             </div>
             <div class="intro-image-col">
@@ -201,9 +198,9 @@ export default {
         <!-- CTA final -->
         <section class="final-cta">
             <h2 class="final-cta-title">Prêt à partager ta première recette ?</h2>
-            <p class="final-cta-text">Rejoins la communauté {{ siteName }}, c'est gratuit.</p>
-            <Link v-if="!$page.props.auth.user" :href="route('register')" class="btn-primary btn-lg">
-                Créer mon compte
+            <p class="final-cta-text">{{ siteName }} fonctionne sur invitation pour le moment.</p>
+            <Link v-if="!$page.props.auth.user" :href="route('login')" class="btn-primary btn-lg">
+                Se connecter
             </Link>
             <Link v-else :href="route('feed')" class="btn-primary btn-lg">
                 Accéder à mon espace

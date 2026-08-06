@@ -84,8 +84,7 @@ export default {
         <PrimaryButton :disabled="form.processing">Se connecter</PrimaryButton>
 
         <p class="auth-switch">
-            Pas encore de compte ?
-            <Link :href="route('register')" class="auth-link">Créer un compte</Link>
+            {{ $page.props.site.name }} fonctionne sur invitation — contacte un administrateur si tu n'as pas encore de compte.
         </p>
     </form>
 </template>

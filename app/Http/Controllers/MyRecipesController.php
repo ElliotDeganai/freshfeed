@@ -7,10 +7,13 @@ use App\Models\Post;
 use App\Models\PostIngredient;
 use App\Models\PostStep;
 use App\Models\PostStepImage;
+use App\Models\User;
+use App\Notifications\NewRecipeCreatedNotification;
 use App\Services\CalorieEstimatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -115,6 +118,8 @@ class MyRecipesController extends Controller
         // if (empty($data['calories']) && ! empty($data['ingredients'])) {
         //     $this->applyCalorieEstimate($post, $data['ingredients']);
         // }
+
+        Notification::send(User::role('admin')->get(), new NewRecipeCreatedNotification($post));
 
         return redirect()->route('my-recipes.index')
             ->with('success', 'Recette créée.');

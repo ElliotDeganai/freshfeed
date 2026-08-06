@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use App\Models\User;
 use Inertia\Response;
 
 class NewPasswordController extends Controller
@@ -45,10 +46,13 @@ class NewPasswordController extends Controller
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
+            function (User $user) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
+                    // ⬇️ Ligne à ajouter — ne l'écrase pas si déjà activé (un vrai
+                    // "mot de passe oublié" plus tard ne doit pas changer cette date).
+                    'activated_at' => $user->activated_at ?? now(),
                 ])->save();
 
                 event(new PasswordReset($user));

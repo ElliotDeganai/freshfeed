@@ -29,15 +29,10 @@
         <!-- Panneau formulaire -->
         <div class="form-panel">
             <div class="form-panel-inner">
-                <Link href="/" class="mobile-brand-mark">
-                    <SiteLogo :size="22" />
-                </Link>
 
                 <div class="form-card">
                     <slot />
                 </div>
-
-                <Link href="/" class="back-link"><i class="ti ti-arrow-left"></i> Retour à l'accueil</Link>
 
                 <a href="https://ed-factory.com/" target="_blank" rel="noopener noreferrer" class="form-ed-credit">
                     Made by
