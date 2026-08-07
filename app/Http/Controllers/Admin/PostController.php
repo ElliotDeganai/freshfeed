@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Post;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -12,6 +13,9 @@ use Inertia\Response;
 
 class PostController extends Controller
 {
+    public function __construct(private ImageUploadService $imageUploader)
+    {
+    }
     public function index(Request $request): Response
     {
         $user = Auth::user();
@@ -57,7 +61,7 @@ class PostController extends Controller
             'calories_unit' => ['nullable', 'in:g,ml'],
             'category_ids' => ['array'],
             'category_ids.*' => ['exists:categories,id'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:20480'],
         ]);
 
         $canPublish = Auth::user()->can('publish-posts');
@@ -79,7 +83,7 @@ class PostController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
+            $path = $this->imageUploader->store($request->file('image'), 'posts');
             $post->update(['image_path' => $path]);
         }
 
@@ -109,7 +113,7 @@ class PostController extends Controller
             'calories_unit' => ['nullable', 'in:g,ml'],
             'category_ids' => ['array'],
             'category_ids.*' => ['exists:categories,id'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:20480'],
         ]);
 
         $canPublish = Auth::user()->can('publish-posts');
@@ -131,7 +135,7 @@ class PostController extends Controller
         $post->categories()->sync($data['category_ids'] ?? []);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
+            $path = $this->imageUploader->store($request->file('image'), 'posts');
             $post->update(['image_path' => $path]);
         }
 

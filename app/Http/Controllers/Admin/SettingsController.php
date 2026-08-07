@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SettingsController extends Controller
 {
+    public function __construct(private ImageUploadService $imageUploader)
+    {
+    }
     public function index(): Response
     {
         return Inertia::render('Admin/Settings/Index', [
@@ -34,7 +38,7 @@ class SettingsController extends Controller
             'canonical_domain' => ['nullable', 'string', 'max:255'],
             'slug_feed' => ['nullable', 'string', 'alpha_dash', 'max:100'],
             'slug_explore' => ['nullable', 'string', 'alpha_dash', 'max:100'],
-            'logo' => ['nullable', 'mimes:png,jpg,jpeg,svg', 'max:2048'],
+            'logo' => ['nullable', 'mimes:png,jpg,jpeg,svg', 'max:20480'],
         ]);
 
         AppSetting::set('app_name', $data['app_name']);
@@ -50,7 +54,7 @@ class SettingsController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('branding', 'public');
+            $path = $this->imageUploader->store($request->file('logo'), 'branding', maxWidth: 512, maxHeight: 512, targetMaxBytes: 300_000);
             AppSetting::set('logo_path', $path);
         }
 

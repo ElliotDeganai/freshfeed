@@ -52,4 +52,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Post::class);
     }
+
+    // 5. Recettes mises en favori par ce user :
+    public function favoritePosts()
+    {
+        return $this->belongsToMany(\App\Models\Post::class, 'post_favorites')->withTimestamps();
+    }
 }

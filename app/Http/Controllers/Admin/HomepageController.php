@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Post;
 use App\Support\HomepageShowcase;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -14,6 +15,10 @@ use Inertia\Response;
 class HomepageController extends Controller
 {
     private const MAX_GRID_ITEMS = 4;
+
+    public function __construct(private ImageUploadService $imageUploader)
+    {
+    }
 
     public function index(): Response
     {
@@ -45,7 +50,7 @@ class HomepageController extends Controller
             'hero_title' => ['required', 'string', 'max:120'],
             'hero_subtitle' => ['required', 'string', 'max:300'],
             'hero_badge' => ['nullable', 'string', 'max:80'],
-            'hero_image' => ['nullable', 'image', 'max:4096'],
+            'hero_image' => ['nullable', 'image', 'max:20480'],
             'featured_post_id' => ['nullable', 'integer', 'exists:posts,id'],
             'grid_post_ids' => ['array', 'max:' . self::MAX_GRID_ITEMS],
             'grid_post_ids.*' => ['integer', 'exists:posts,id'],
@@ -86,7 +91,7 @@ class HomepageController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
-        $path = $file->store('homepage', 'public');
+        $path = $this->imageUploader->store($file, 'homepage', maxWidth: 1920, maxHeight: 1920, targetMaxBytes: 2_500_000);
         AppSetting::set($key, $path);
     }
 }

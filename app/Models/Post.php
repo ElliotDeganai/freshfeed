@@ -75,4 +75,9 @@ class Post extends Model
     {
         return $this->hasMany(PostRating::class);
     }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'post_favorites')->withTimestamps();
+    }
 }

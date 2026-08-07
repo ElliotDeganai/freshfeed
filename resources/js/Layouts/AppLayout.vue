@@ -13,6 +13,9 @@
                 <Link :href="route('my-recipes.index')" class="app-nav-link" :class="{ on: isActive('/my-recipes') }">
                     <i class="ti ti-pencil"></i> Mes recettes
                 </Link>
+                <Link :href="route('favorites.index')" class="app-nav-link" :class="{ on: isActive('/favorites') }">
+                    <i class="ti ti-heart"></i> Favoris
+                </Link>
                 <Link href="/profile" class="app-nav-link" :class="{ on: isActive('/profile') }">
                     <i class="ti ti-user"></i> Mon profil
                 </Link>
@@ -36,6 +39,9 @@
                             </Link>
                             <Link href="/profile" class="account-dropdown-link">
                                 <i class="ti ti-user"></i> Mon profil
+                            </Link>
+                            <Link :href="route('favorites.index')" class="account-dropdown-link">
+                                <i class="ti ti-heart"></i> Mes favoris
                             </Link>
                             <Link :href="route('logout')" method="post" as="button" class="account-dropdown-link account-dropdown-link--danger">
                                 <i class="ti ti-logout"></i> Déconnexion

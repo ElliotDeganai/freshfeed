@@ -10,9 +10,11 @@ use App\Models\PostStepImage;
 use App\Models\User;
 use App\Notifications\NewRecipeCreatedNotification;
 use App\Services\CalorieEstimatorService;
+use App\Services\ImageUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -29,19 +31,32 @@ use Inertia\Response;
  */
 class MyRecipesController extends Controller
 {
-    public function __construct(private CalorieEstimatorService $calorieEstimator)
-    {
+    public function __construct(
+        private CalorieEstimatorService $calorieEstimator,
+        private ImageUploadService $imageUploader,
+    ) {
     }
 
     public function index(Request $request): Response|JsonResponse
     {
         $posts = Post::query()
             ->where('user_id', Auth::id())
+            ->when(
+                $request->filled('search'),
+                fn ($q) => $q->where('title', 'like', '%' . $request->string('search') . '%')
+            )
             ->with('categories:id,name')
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
+            ->addSelect(['is_favorited' => DB::table('post_favorites')
+                ->selectRaw('1')
+                ->whereColumn('post_favorites.post_id', 'posts.id')
+                ->where('post_favorites.user_id', Auth::id())
+                ->limit(1),
+            ])
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         // Appelé en fetch() depuis le scroll infini — réponse JSON directe,
         // sans passer par Inertia, donc aucune manipulation d'URL/historique possible.
@@ -51,6 +66,7 @@ class MyRecipesController extends Controller
 
         return Inertia::render('MyRecipes/Index', [
             'posts' => $posts,
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -70,7 +86,7 @@ class MyRecipesController extends Controller
             'calories_unit' => ['nullable', 'in:g,ml'],
             'category_ids' => ['array'],
             'category_ids.*' => ['exists:categories,id'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:20480'],
             'ingredients' => ['array'],
             'ingredients.*.name' => ['required_with:ingredients', 'string', 'max:150'],
             'ingredients.*.amount' => ['nullable', 'string', 'max:30'],
@@ -78,7 +94,7 @@ class MyRecipesController extends Controller
             'steps' => ['array'],
             'steps.*.instruction' => ['required_with:steps', 'string', 'max:2000'],
             'steps.*.images' => ['array'],
-            'steps.*.images.*' => ['image', 'max:8192'],
+            'steps.*.images.*' => ['image', 'max:20480'],
             'steps.*.video' => ['nullable', 'mimes:mp4,mov,avi,webm', 'max:25600'],
         ]);
 
@@ -103,7 +119,7 @@ class MyRecipesController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $post->update(['image_path' => $request->file('image')->store('posts', 'public')]);
+            $post->update(['image_path' => $this->imageUploader->store($request->file('image'), 'posts')]);
         }
 
         foreach ($data['ingredients'] ?? [] as $i => $ingredient) {
@@ -131,7 +147,7 @@ class MyRecipesController extends Controller
                 foreach ($request->file("steps.$i.images") as $j => $image) {
                     PostStepImage::create([
                         'post_step_id' => $step->id,
-                        'path' => $image->store('post-steps/images', 'public'),
+                        'path' => $this->imageUploader->store($image, 'post-steps/images', maxWidth: 1400, maxHeight: 1400, targetMaxBytes: 1_500_000),
                         'order' => $j,
                     ]);
                 }
@@ -173,7 +189,7 @@ class MyRecipesController extends Controller
             'calories_unit' => ['nullable', 'in:g,ml'],
             'category_ids' => ['array'],
             'category_ids.*' => ['exists:categories,id'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:20480'],
             'ingredients' => ['array'],
             'ingredients.*.name' => ['required_with:ingredients', 'string', 'max:150'],
             'ingredients.*.amount' => ['nullable', 'string', 'max:30'],
@@ -196,7 +212,7 @@ class MyRecipesController extends Controller
             if ($post->image_path) {
                 Storage::disk('public')->delete($post->image_path);
             }
-            $post->update(['image_path' => $request->file('image')->store('posts', 'public')]);
+            $post->update(['image_path' => $this->imageUploader->store($request->file('image'), 'posts')]);
         }
 
         // Ingrédients : simple texte, pas de fichiers → on remplace tout à chaque sauvegarde.
@@ -277,7 +293,7 @@ class MyRecipesController extends Controller
         foreach ($request->file('images', []) as $i => $file) {
             PostStepImage::create([
                 'post_step_id' => $step->id,
-                'path' => $file->store('recipe-steps', 'public'),
+                'path' => $this->imageUploader->store($file, 'recipe-steps', maxWidth: 1400, maxHeight: 1400, targetMaxBytes: 1_500_000),
                 'order' => $i,
             ]);
         }
@@ -304,7 +320,7 @@ class MyRecipesController extends Controller
         foreach ($request->file('images', []) as $i => $file) {
             PostStepImage::create([
                 'post_step_id' => $step->id,
-                'path' => $file->store('recipe-steps', 'public'),
+                'path' => $this->imageUploader->store($file, 'recipe-steps', maxWidth: 1400, maxHeight: 1400, targetMaxBytes: 1_500_000),
                 'order' => $existingCount + $i,
             ]);
         }
@@ -370,7 +386,7 @@ class MyRecipesController extends Controller
         return $request->validate([
             'instruction' => ['required', 'string', 'max:2000'],
             'images' => ['array'],
-            'images.*' => ['image', 'max:4096'],
+            'images.*' => ['image', 'max:20480'],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/quicktime,video/webm', 'max:20480'],
         ]);
     }

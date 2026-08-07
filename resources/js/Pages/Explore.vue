@@ -20,6 +20,7 @@
                         <i class="ti ti-tools-kitchen-2"></i>
                     </div>
                     <span v-if="post.ratings_count" class="rating-pill rating-pill--overlay"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }}</span>
+                    <FavoriteButton :post-id="post.id" :favorited="!!post.is_favorited" overlay class="fav-btn--corner" />
                 </div>
                 <div class="explore-card-title">{{ post.title }}</div>
                 <div class="explore-card-badges">
@@ -44,11 +45,12 @@
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import FavoriteButton from '@/Components/FavoriteButton.vue';
 import { avatarColor } from '@/Components/Admin/avatarPalette.js';
 
 export default {
     layout: null,
-    components: { AppLayout, Head, Link },
+    components: { AppLayout, Head, Link, FavoriteButton },
     props: {
         categories: Array,
         posts: Object,
@@ -111,6 +113,7 @@ export default {
 .explore-card { text-decoration: none; display: block; }
 .explore-card-image { aspect-ratio: 1; border-radius: 14px; overflow: hidden; margin-bottom: 8px; background: #F0F1F0; position: relative; }
 .rating-pill--overlay { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.92); }
+.fav-btn--corner { position: absolute; top: 8px; left: 8px; }
 .explore-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .explore-card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
 .explore-card-title { font-size: 12.5px; font-weight: 500; color: #10241D; line-height: 1.35; }

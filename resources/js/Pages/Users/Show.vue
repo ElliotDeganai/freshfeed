@@ -20,6 +20,7 @@
                             <i class="ti ti-tools-kitchen-2"></i>
                         </div>
                         <span v-if="post.ratings_count" class="rating-pill rating-pill--overlay"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }}</span>
+                        <FavoriteButton :post-id="post.id" :favorited="!!post.is_favorited" overlay class="fav-btn--corner" />
                     </div>
                     <div class="explore-card-title">{{ post.title }}</div>
                 </Link>
@@ -42,12 +43,13 @@
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import FavoriteButton from '@/Components/FavoriteButton.vue';
 import UserAvatar from '@/Components/UserAvatar.vue';
 import { avatarColor } from '@/Components/Admin/avatarPalette.js';
 
 export default {
     layout: null,
-    components: { AppLayout, Head, Link, UserAvatar },
+    components: { AppLayout, Head, Link, UserAvatar, FavoriteButton },
     props: {
         profileUser: Object,
         recipes: Object,
@@ -94,7 +96,7 @@ export default {
 <style scoped>
 .profile-header {
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    max-width: 850px; margin: 0 auto 32px; padding: 8px 16px;
+    max-width: 480px; margin: 0 auto 32px; padding: 8px 16px;
 }
 .profile-name { font-size: 20px; font-weight: 500; color: #10241D; margin: 14px 0 8px; }
 .profile-bio { font-size: 13.5px; color: #4B5A54; line-height: 1.6; }
@@ -117,6 +119,7 @@ export default {
     color: #854F0B; background: #FAEEDA; padding: 3px 9px; border-radius: 999px;
 }
 .rating-pill--overlay { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.92); }
+.fav-btn--corner { position: absolute; top: 8px; left: 8px; }
 .rating-pill i { color: #E3B23C; }
 
 .empty-state { grid-column: 1 / -1; text-align: center; color: #8FA098; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }

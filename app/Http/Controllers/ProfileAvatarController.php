@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileAvatarController extends Controller
 {
+    public function __construct(private ImageUploadService $imageUploader)
+    {
+    }
+
     public function update(Request $request)
     {
         $request->validate([
-            'avatar' => ['required', 'mimes:png,jpg,jpeg,svg', 'max:2048'],
+            // max ici = plafond de sécurité (évite qu'un fichier énorme sature le
+            // traitement) — pas la taille finale, ImageUploadService s'en charge.
+            'avatar' => ['required', 'mimes:png,jpg,jpeg,svg', 'max:20480'],
         ]);
 
         $user = Auth::user();
@@ -21,7 +28,13 @@ class ProfileAvatarController extends Controller
         }
 
         $user->update([
-            'avatar_path' => $request->file('avatar')->store('avatars', 'public'),
+            'avatar_path' => $this->imageUploader->store(
+                $request->file('avatar'),
+                'avatars',
+                maxWidth: 512,
+                maxHeight: 512,
+                targetMaxBytes: 400_000,
+            ),
         ]);
 
         return back()->with('success', 'Photo de profil mise à jour.');

@@ -12,6 +12,8 @@ use App\Http\Controllers\PostShowController;
 use App\Http\Controllers\ProfileAvatarController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostRatingController;
+use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\PostFavoriteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +85,12 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/posts/{post}/rating', [PostRatingController::class, 'store'])->name('posts.rating.store');
     Route::delete('/posts/{post}/rating', [PostRatingController::class, 'destroy'])->name('posts.rating.destroy');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
+    Route::post('/posts/{post}/favorite', [PostFavoriteController::class, 'store'])->name('posts.favorite.store');
+    Route::delete('/posts/{post}/favorite', [PostFavoriteController::class, 'destroy'])->name('posts.favorite.destroy');
 });
 
 require __DIR__.'/auth.php';

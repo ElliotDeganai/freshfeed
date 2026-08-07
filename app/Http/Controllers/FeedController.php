@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,6 +19,12 @@ class FeedController extends Controller
             ->with(['user:id,name,avatar_path', 'categories:id,name'])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
+            ->when(Auth::check(), fn ($q) => $q->addSelect(['is_favorited' => DB::table('post_favorites')
+                ->selectRaw('1')
+                ->whereColumn('post_favorites.post_id', 'posts.id')
+                ->where('post_favorites.user_id', Auth::id())
+                ->limit(1),
+            ]))
             ->latest('published_at')
             ->paginate(12);
 

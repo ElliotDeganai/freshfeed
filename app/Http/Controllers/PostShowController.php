@@ -32,6 +32,9 @@ class PostShowController extends Controller
         $myRating = Auth::check()
             ? $post->ratings()->where('user_id', Auth::id())->value('rating')
             : null;
+        $isFavorited = Auth::check()
+            ? $post->favoritedBy()->where('user_id', Auth::id())->exists()
+            : false;
 
         return Inertia::render('Post/Show', [
             'post' => [
@@ -48,6 +51,7 @@ class PostShowController extends Controller
             'ratingsAverage' => $ratingsAverage,
             'ratingsCount' => $ratingsCount,
             'myRating' => $myRating,
+            'isFavorited' => $isFavorited,
         ]);
     }
 }

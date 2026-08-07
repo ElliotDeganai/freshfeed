@@ -20,6 +20,7 @@
                     <div class="recipe-tags">
                         <span v-for="cat in post.categories" :key="cat.id" class="tag-pill">{{ cat.name }}</span>
                         <span v-if="post.calories !== null" class="meta-calories"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
+                        <FavoriteButton v-if="$page.props.auth.user" :post-id="post.id" :favorited="isFavorited" class="fav-btn--title" />
                     </div>
                     <h1 class="recipe-title">{{ post.title }}</h1>
 
@@ -92,16 +93,18 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { avatarColor } from '@/Components/Admin/avatarPalette.js';
 import UserAvatar from '@/Components/UserAvatar.vue';
+import FavoriteButton from '@/Components/FavoriteButton.vue';
 
 export default {
     layout: null,
-    components: { AppLayout, PublicLayout, Head, Link, UserAvatar },
+    components: { AppLayout, PublicLayout, Head, Link, UserAvatar, FavoriteButton },
     props: {
         post: Object,
         isOwner: Boolean,
         ratingsAverage: { type: Number, default: null },
         ratingsCount: { type: Number, default: 0 },
         myRating: { type: Number, default: null },
+        isFavorited: { type: Boolean, default: false },
     },
     data() {
         return {
@@ -152,7 +155,8 @@ export default {
     background: #fff; border-radius: 16px; padding: 18px 20px;
     box-shadow: 0 10px 26px rgba(16,36,29,.12);
 }
-.recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.fav-btn--title { margin-left: auto; }
 .tag-pill { font-size: 11.5px; background: #F0F1F0; color: #6B7B74; padding: 3px 11px; border-radius: 999px; }
 .recipe-title { font-size: 22px; font-weight: 500; color: #10241D; line-height: 1.3; margin-bottom: 12px; }
 

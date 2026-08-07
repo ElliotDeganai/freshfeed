@@ -1,17 +1,14 @@
 <template>
     <AppLayout>
-        <Head title="Mes recettes" />
+        <Head title="Mes favoris" />
 
         <div class="page-header">
-            <h1 class="page-title">Mes recettes</h1>
-            <Link :href="route('my-recipes.create')" class="btn-add-recipe">
-                <i class="ti ti-plus"></i> <span>Ajouter une recette</span>
-            </Link>
+            <h1 class="page-title">Mes favoris</h1>
         </div>
 
         <div class="search-box">
             <i class="ti ti-search"></i>
-            <input v-model="search" type="text" placeholder="Rechercher dans mes recettes..." @input="debouncedSearch" />
+            <input v-model="search" type="text" placeholder="Rechercher dans mes favoris..." @input="debouncedSearch" />
         </div>
 
         <div class="recipe-list">
@@ -26,32 +23,26 @@
                 <div class="recipe-card-main">
                     <div class="recipe-card-top">
                         <Link :href="route('posts.show', post.id)" class="recipe-title">{{ post.title }}</Link>
-                        <span class="badge" :class="post.status === 'published' ? 'badge--green' : 'badge--gray'">
-                            {{ post.status === 'published' ? 'Publiée' : 'Brouillon' }}
-                        </span>
                     </div>
-                    <div class="recipe-tags">
+                    <div class="recipe-meta">
+                        <span v-if="post.user" class="recipe-author">par {{ post.user.name }}</span>
                         <span v-for="cat in post.categories" :key="cat.id" class="tag-pill">{{ cat.name }}</span>
-                        <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
                         <span v-if="post.ratings_count" class="rating-pill"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }} ({{ post.ratings_count }})</span>
                     </div>
                 </div>
 
                 <div class="row-actions">
-                    <FavoriteButton :post-id="post.id" :favorited="!!post.is_favorited" />
-                    <Link :href="route('posts.show', post.id)" class="icon-btn"><i class="ti ti-eye"></i></Link>
-                    <Link :href="route('my-recipes.edit', post.id)" class="icon-btn"><i class="ti ti-pencil"></i></Link>
-                    <button class="icon-btn icon-btn--danger" @click="destroy(post)"><i class="ti ti-trash"></i></button>
+                    <FavoriteButton :post-id="post.id" :favorited="true" @click="removeLocal(post.id)" />
                 </div>
             </div>
 
             <div v-if="items.length === 0" class="empty-state">
-                <i class="ti ti-tools-kitchen-2"></i>
-                <p v-if="search">Aucune recette ne correspond à "{{ search }}".</p>
+                <i class="ti ti-heart"></i>
+                <p v-if="search">Aucun favori ne correspond à "{{ search }}".</p>
                 <template v-else>
-                    <p>Tu n'as pas encore ajouté de recette.</p>
-                    <Link :href="route('my-recipes.create')" class="btn-add-recipe">
-                        <i class="ti ti-plus"></i> <span>Ajouter ma première recette</span>
+                    <p>Aucune recette en favori pour l'instant.</p>
+                    <Link :href="route('explore')" class="btn-add-recipe">
+                        <i class="ti ti-compass"></i> <span>Explorer les recettes</span>
                     </Link>
                 </template>
             </div>
@@ -68,8 +59,8 @@
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import FavoriteButton from '@/Components/FavoriteButton.vue';
 import { avatarColor } from '@/Components/Admin/avatarPalette.js';
+import FavoriteButton from '@/Components/FavoriteButton.vue';
 
 export default {
     layout: null,
@@ -110,7 +101,7 @@ export default {
         debouncedSearch() {
             clearTimeout(this.debounceTimer);
             this.debounceTimer = setTimeout(() => {
-                router.get(route('my-recipes.index'), { search: this.search || undefined }, {
+                router.get(route('favorites.index'), { search: this.search || undefined }, {
                     preserveState: true,
                     replace: true,
                 });
@@ -123,7 +114,7 @@ export default {
             const params = new URLSearchParams({ page: this.currentPage + 1 });
             if (this.search) params.set('search', this.search);
 
-            fetch(`${route('my-recipes.index')}?${params}`, {
+            fetch(`${route('favorites.index')}?${params}`, {
                 headers: { Accept: 'application/json' },
             })
                 .then((r) => r.json())
@@ -134,24 +125,18 @@ export default {
                 })
                 .finally(() => { this.loading = false; });
         },
-        destroy(post) {
-            if (confirm(`Supprimer la recette "${post.title}" ?`)) {
-                router.delete(route('my-recipes.destroy', post.id), {
-                    preserveState: true,
-                    preserveScroll: true,
-                    preserveUrl: true,
-                    onSuccess: () => {
-                        this.items = this.items.filter((p) => p.id !== post.id);
-                    },
-                });
-            }
+        // Un item retiré des favoris disparaît de la liste immédiatement, sans
+        // attendre un rechargement — cohérent avec le retrait "en un clic".
+        removeLocal(postId) {
+            this.items = this.items.filter((p) => p.id !== postId);
         },
     },
 };
 </script>
 
 <style scoped>
-.page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 760px; margin: 0 auto 18px; }
+.page-header { max-width: 760px; margin: 0 auto 18px; }
+.page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
 .search-box {
     display: flex; align-items: center; gap: 8px; background: #fff; border: 0.5px solid #E7E9E7;
@@ -159,14 +144,12 @@ export default {
 }
 .search-box i { font-size: 15px; }
 .search-box input { border: none; outline: none; background: transparent; font-size: 13.5px; width: 100%; font-family: inherit; color: #10241D; }
-.page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
 .btn-add-recipe {
     display: inline-flex; align-items: center; gap: 6px; background: #1D9E75; color: #fff;
     border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 500; text-decoration: none; flex-shrink: 0;
 }
 .btn-add-recipe:hover { background: #178563; }
-.btn-add-recipe i { font-size: 15px; }
 
 .recipe-list { display: flex; flex-direction: column; gap: 10px; max-width: 760px; margin: 0 auto; }
 .recipe-card {
@@ -175,43 +158,27 @@ export default {
 }
 .recipe-card:hover { border-color: #C7E8DA; }
 
-.recipe-card-image {
-    width: 64px; height: 64px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: block;
-}
+.recipe-card-image { width: 64px; height: 64px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: block; }
 .recipe-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .recipe-card-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
 
 .recipe-card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
-.recipe-card-top { display: flex; align-items: center; gap: 10px; }
 .recipe-title {
     font-size: 14.5px; font-weight: 500; color: #10241D; text-decoration: none;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .recipe-title:hover { color: #1D9E75; }
 
-.recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.recipe-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.recipe-author { font-size: 11.5px; color: #8FA098; }
 .tag-pill { font-size: 11px; background: #F0F1F0; color: #6B7B74; padding: 2px 9px; border-radius: 999px; }
-.calorie-pill {
-    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
-    color: #993C1D; background: #FAECE7; padding: 2px 9px; border-radius: 999px;
-}
 .rating-pill {
     display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
     color: #854F0B; background: #FAEEDA; padding: 2px 9px; border-radius: 999px;
 }
 .rating-pill i { color: #E3B23C; }
 
-.badge { font-size: 10.5px; padding: 3px 10px; border-radius: 999px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
-.badge--green { background: #E7F5EF; color: #146C4E; }
-.badge--gray { background: #F0F1F0; color: #6B7B74; }
-
-.row-actions { display: flex; gap: 2px; flex-shrink: 0; padding-left: 8px; border-left: 0.5px solid #F0F1F0; }
-.icon-btn {
-    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; color: #6B7B74; background: transparent; border: none; cursor: pointer; text-decoration: none;
-}
-.icon-btn:hover { background: #F0F1F0; }
-.icon-btn--danger:hover { background: #FDECEC; color: #B3261E; }
+.row-actions { flex-shrink: 0; padding-left: 8px; border-left: 0.5px solid #F0F1F0; }
 
 .empty-state { text-align: center; color: #8FA098; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .empty-state i { font-size: 28px; }
@@ -221,11 +188,4 @@ export default {
 .loading-spinner i { font-size: 16px; animation: spin 0.8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .end-of-feed { font-size: 13px; color: #8FA098; }
-
-@media (max-width: 420px) {
-    .btn-add-recipe span { display: none; }
-    .btn-add-recipe { padding: 9px; }
-    .empty-state .btn-add-recipe span { display: inline; }
-    .empty-state .btn-add-recipe { padding: 8px 16px; }
-}
 </style>
