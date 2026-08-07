@@ -75,6 +75,11 @@ class MyRecipesController extends Controller
             'ingredients.*.name' => ['required_with:ingredients', 'string', 'max:150'],
             'ingredients.*.amount' => ['nullable', 'string', 'max:30'],
             'ingredients.*.unit' => ['nullable', 'string', 'max:30'],
+            'steps' => ['array'],
+            'steps.*.instruction' => ['required_with:steps', 'string', 'max:2000'],
+            'steps.*.images' => ['array'],
+            'steps.*.images.*' => ['image', 'max:8192'],
+            'steps.*.video' => ['nullable', 'mimes:mp4,mov,avi,webm', 'max:25600'],
         ]);
 
         // Chacun publie librement ses propres recettes — pas de validation éditoriale
@@ -109,6 +114,28 @@ class MyRecipesController extends Controller
                 'unit' => $ingredient['unit'] ?? null,
                 'order' => $i,
             ]);
+        }
+
+        foreach ($data['steps'] ?? [] as $i => $stepData) {
+            $step = PostStep::create([
+                'post_id' => $post->id,
+                'instruction' => $stepData['instruction'],
+                'order' => $i,
+            ]);
+
+            if ($request->hasFile("steps.$i.video")) {
+                $step->update(['video_path' => $request->file("steps.$i.video")->store('post-steps/video', 'public')]);
+            }
+
+            if ($request->hasFile("steps.$i.images")) {
+                foreach ($request->file("steps.$i.images") as $j => $image) {
+                    PostStepImage::create([
+                        'post_step_id' => $step->id,
+                        'path' => $image->store('post-steps/images', 'public'),
+                        'order' => $j,
+                    ]);
+                }
+            }
         }
 
         // 🔒 Fonctionnalité "estimation automatique des calories" masquée temporairement

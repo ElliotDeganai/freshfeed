@@ -6,60 +6,100 @@
             <h1 class="page-title">Ajouter une recette</h1>
         </div>
 
-        <form class="panel" @submit.prevent>
-            <label class="field">
-                <span>Titre</span>
-                <input v-model="form.title" type="text" class="input" required />
-            </label>
+        <div class="builder-grid">
+            <!-- Infos de base -->
+            <form class="panel" @submit.prevent>
+                <label class="field">
+                    <span>Titre</span>
+                    <input v-model="form.title" type="text" class="input" required />
+                </label>
 
-            <div class="field">
-                <span>Description</span>
-                <RichTextEditor v-model="form.content" placeholder="Présente ta recette, son origine, une astuce..." />
-            </div>
+                <div class="field">
+                    <span>Description</span>
+                    <RichTextEditor v-model="form.content" placeholder="Présente ta recette, son origine, une astuce..." />
+                </div>
 
-            <label class="field">
-                <span>Calories (optionnel)</span>
-                <div class="calories-row">
-                    <input v-model.number="form.calories" type="number" min="0" class="input input--sm" placeholder="ex: 250" />
-                    <div class="pill-toggle">
-                        <button type="button" class="pill-check" :class="{ on: form.calories_unit === 'g' }" @click="form.calories_unit = 'g'">pour 100 g</button>
-                        <button type="button" class="pill-check" :class="{ on: form.calories_unit === 'ml' }" @click="form.calories_unit = 'ml'">pour 100 ml</button>
+                <label class="field">
+                    <span>Calories (optionnel)</span>
+                    <div class="calories-row">
+                        <input v-model.number="form.calories" type="number" min="0" class="input input--sm" placeholder="ex: 250" />
+                        <div class="pill-toggle">
+                            <button type="button" class="pill-check" :class="{ on: form.calories_unit === 'g' }" @click="form.calories_unit = 'g'">pour 100 g</button>
+                            <button type="button" class="pill-check" :class="{ on: form.calories_unit === 'ml' }" @click="form.calories_unit = 'ml'">pour 100 ml</button>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="field">
+                    <span>Catégories</span>
+                    <div class="pill-checklist">
+                        <label v-for="cat in categories" :key="cat.id" class="pill-check" :class="{ on: form.category_ids.includes(cat.id) }">
+                            <input type="checkbox" :value="cat.id" v-model="form.category_ids" class="sr-only" />
+                            {{ cat.name }}
+                        </label>
+                    </div>
+                </label>
+
+                <label class="field">
+                    <span>Image de couverture</span>
+                    <input type="file" accept="image/*" @change="onFileChange" />
+                    <img v-if="coverPreview" :src="coverPreview" class="cover-preview" alt="" />
+                </label>
+
+                <div class="field">
+                    <span>Ingrédients</span>
+                    <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
+                        <input v-model="ing.amount" type="text" placeholder="200" class="input input--sm" />
+                        <input v-model="ing.unit" type="text" placeholder="g" class="input input--sm" />
+                        <input v-model="ing.name" type="text" placeholder="farine de blé" class="input input--grow" />
+                        <button type="button" class="icon-btn icon-btn--danger" @click="removeIngredient(i)"><i class="ti ti-trash"></i></button>
+                    </div>
+                    <button type="button" class="btn-add-row" @click="addIngredient"><i class="ti ti-plus"></i> Ajouter un ingrédient</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" @click="submit(false)">Enregistrer en brouillon</button>
+                    <button type="button" class="btn-primary" @click="submit(true)">Publier</button>
+                </div>
+            </form>
+
+            <!-- Étapes -->
+            <section class="panel">
+                <h2 class="panel-title"><i class="ti ti-list-numbers"></i> Étapes ({{ form.steps.length }})</h2>
+
+                <div v-for="(step, i) in form.steps" :key="i" class="step-card">
+                    <div class="step-card-header">
+                        <span class="step-number">{{ i + 1 }}</span>
+                        <p class="step-instruction">{{ step.instruction }}</p>
+                        <button type="button" class="icon-btn icon-btn--danger" @click="removeStep(i)"><i class="ti ti-trash"></i></button>
+                    </div>
+                    <div v-if="step.imagePreviews.length || step.video" class="step-media">
+                        <div v-for="(src, j) in step.imagePreviews" :key="j" class="step-media-item">
+                            <img :src="src" alt="" />
+                        </div>
+                        <div v-if="step.video" class="step-media-item step-media-item--video">
+                            <span class="step-media-video-tag"><i class="ti ti-video"></i> vidéo</span>
+                        </div>
                     </div>
                 </div>
-                <p class="field-hint">Laisse vide pour une estimation automatique à partir des ingrédients.</p>
-            </label>
 
-            <label class="field">
-                <span>Catégories</span>
-                <div class="pill-checklist">
-                    <label v-for="cat in categories" :key="cat.id" class="pill-check" :class="{ on: form.category_ids.includes(cat.id) }">
-                        <input type="checkbox" :value="cat.id" v-model="form.category_ids" class="sr-only" />
-                        {{ cat.name }}
-                    </label>
+                <div class="step-form">
+                    <p class="step-form-title">Ajouter une étape</p>
+                    <textarea v-model="stepDraft.instruction" class="input" rows="3" placeholder="Décris cette étape..."></textarea>
+                    <div class="step-form-media">
+                        <label class="btn-secondary btn-secondary--sm">
+                            <input type="file" accept="image/*" multiple class="sr-only" @change="onStepImages" />
+                            <i class="ti ti-photo-plus"></i> Photos ({{ stepDraft.images.length }})
+                        </label>
+                        <label class="btn-secondary btn-secondary--sm">
+                            <input type="file" accept="video/*" class="sr-only" @change="onStepVideo" />
+                            <i class="ti ti-video-plus"></i> {{ stepDraft.video ? 'Vidéo sélectionnée' : 'Vidéo' }}
+                        </label>
+                    </div>
+                    <button type="button" class="btn-add-row" @click="addStep"><i class="ti ti-plus"></i> Ajouter l'étape</button>
                 </div>
-            </label>
-
-            <label class="field">
-                <span>Image de couverture</span>
-                <input type="file" accept="image/*" @change="onFileChange" />
-            </label>
-
-            <div class="field">
-                <span>Ingrédients</span>
-                <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
-                    <input v-model="ing.amount" type="text" placeholder="200" class="input input--sm" />
-                    <input v-model="ing.unit" type="text" placeholder="g" class="input input--sm" />
-                    <input v-model="ing.name" type="text" placeholder="farine de blé" class="input input--grow" />
-                    <button type="button" class="icon-btn icon-btn--danger" @click="removeIngredient(i)"><i class="ti ti-trash"></i></button>
-                </div>
-                <button type="button" class="btn-add-row" @click="addIngredient"><i class="ti ti-plus"></i> Ajouter un ingrédient</button>
-            </div>
-
-            <div class="form-actions">
-                <button type="button" class="btn-secondary" @click="submit(false)">Enregistrer en brouillon</button>
-                <button type="button" class="btn-primary" @click="submit(true)">Publier</button>
-            </div>
-        </form>
+            </section>
+        </div>
     </AppLayout>
 </template>
 
@@ -82,12 +122,17 @@ export default {
                 category_ids: [],
                 image: null,
                 ingredients: [{ amount: '', unit: '', name: '' }],
+                steps: [],
             },
+            coverPreview: null,
+            stepDraft: { instruction: '', images: [], imagePreviews: [], video: null },
         };
     },
     methods: {
         onFileChange(e) {
-            this.form.image = e.target.files[0] ?? null;
+            const file = e.target.files[0] ?? null;
+            this.form.image = file;
+            this.coverPreview = file ? URL.createObjectURL(file) : null;
         },
         addIngredient() {
             this.form.ingredients.push({ amount: '', unit: '', name: '' });
@@ -95,27 +140,50 @@ export default {
         removeIngredient(i) {
             this.form.ingredients.splice(i, 1);
         },
+        onStepImages(e) {
+            const files = Array.from(e.target.files);
+            this.stepDraft.images = files;
+            this.stepDraft.imagePreviews = files.map((f) => URL.createObjectURL(f));
+        },
+        onStepVideo(e) {
+            this.stepDraft.video = e.target.files[0] ?? null;
+        },
+        addStep() {
+            if (!this.stepDraft.instruction.trim()) return;
+            this.form.steps.push({ ...this.stepDraft });
+            this.stepDraft = { instruction: '', images: [], imagePreviews: [], video: null };
+        },
+        removeStep(i) {
+            this.form.steps.splice(i, 1);
+        },
         submit(publish) {
             const ingredients = this.form.ingredients.filter((ing) => ing.name.trim());
-            router.post(route('my-recipes.store'), { ...this.form, ingredients, publish }, { forceFormData: true });
+            const steps = this.form.steps.map((s) => ({ instruction: s.instruction, images: s.images, video: s.video }));
+            router.post(route('my-recipes.store'), { ...this.form, ingredients, steps, publish }, { forceFormData: true });
         },
     },
 };
 </script>
 
 <style scoped>
-.page-header { max-width: 680px; margin: 0 auto 18px; }
+.page-header { max-width: 1080px; margin: 0 auto 18px; }
 .page-title { font-size: 20px; font-weight: 500; color: #10241D; }
 
-.panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 24px; max-width: 680px; margin: 0 auto; }
+.builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 1080px; margin: 0 auto; align-items: start; }
+@media (max-width: 800px) { .builder-grid { grid-template-columns: 1fr; } }
+
+.panel { background: #fff; border: 0.5px solid #E7E9E7; border-radius: 16px; padding: 22px; }
+.panel-title { font-size: 14.5px; font-weight: 500; color: #10241D; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.panel-title i { color: #1D9E75; font-size: 16px; }
+
 .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; font-size: 13px; color: #4B5A54; }
 .input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; }
 .input--sm { width: 70px; flex-shrink: 0; }
 .calories-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.field-hint { font-size: 11.5px; color: #8FA098; margin-top: 2px; }
 .pill-toggle { display: flex; gap: 6px; }
 .input--grow { flex: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.cover-preview { max-width: 160px; margin-top: 8px; border-radius: 12px; }
 
 .pill-checklist { display: flex; flex-wrap: wrap; gap: 8px; }
 .pill-check { font-size: 12.5px; padding: 6px 13px; border-radius: 999px; border: 0.5px solid #E7E9E7; color: #6B7B74; cursor: pointer; background: #fff; }
@@ -128,15 +196,43 @@ export default {
 }
 .btn-add-row:hover { background: #F7F8F6; }
 
+.form-actions { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.btn-primary { background: #1D9E75; color: #fff; border: none; border-radius: 20px; padding: 9px 20px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.btn-secondary {
+    display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #6B7B74;
+    border: 0.5px solid #D9DDD9; border-radius: 20px; padding: 9px 16px; font-size: 12.5px; cursor: pointer;
+}
+.btn-secondary--sm { padding: 7px 13px; font-size: 12px; }
+.btn-secondary:hover { background: #F0F1F0; }
+
 .icon-btn {
-    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
     border-radius: 50%; color: #6B7B74; background: transparent; border: none; cursor: pointer; flex-shrink: 0;
 }
 .icon-btn:hover { background: #F0F1F0; }
 .icon-btn--danger:hover { background: #FDECEC; color: #B3261E; }
 
-.form-actions { display: flex; gap: 10px; margin-top: 6px; }
-.form-hint { font-size: 12px; color: #8FA098; margin-top: 10px; }
-.btn-primary { background: #1D9E75; color: #fff; border: none; border-radius: 20px; padding: 9px 20px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
-.btn-secondary { background: transparent; color: #6B7B74; border: 0.5px solid #D9DDD9; border-radius: 20px; padding: 9px 20px; font-size: 13.5px; cursor: pointer; }
+.step-card { border: 0.5px solid #E7E9E7; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.step-card-header { display: flex; align-items: flex-start; gap: 10px; }
+.step-number {
+    width: 24px; height: 24px; border-radius: 50%; background: #E7F5EF; color: #1D9E75;
+    font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step-instruction { flex: 1; font-size: 13px; color: #10241D; line-height: 1.5; }
+
+.step-media { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0 34px; }
+.step-media-item { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; }
+.step-media-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.step-media-item--video {
+    width: auto; height: auto; display: flex; align-items: center;
+}
+.step-media-video-tag {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #6B7B74;
+    background: #F0F1F0; padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+}
+
+.step-form { border-top: 1px dashed #E7E9E7; padding-top: 16px; margin-top: 6px; }
+.step-form-title { font-size: 13.5px; font-weight: 500; color: #10241D; margin-bottom: 10px; }
+.step-form textarea { width: 100%; margin-bottom: 10px; }
+.step-form-media { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 </style>
