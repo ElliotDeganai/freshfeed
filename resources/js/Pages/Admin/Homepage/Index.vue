@@ -45,25 +45,52 @@
             </section>
 
             <section class="panel">
-                <h2 class="panel-title"><i class="ti ti-layout-grid" /> Galerie d'aperçu</h2>
-                <p class="hint">Les 6 photos affichées en grille sous le hero.</p>
+                <h2 class="panel-title"><i class="ti ti-star" /> Recette du moment</h2>
+                <p class="hint">Mise en avant en grand sur l'accueil.</p>
 
-                <div class="gallery-grid">
-                    <div v-for="(img, i) in content.preview_images" :key="i" class="image-slot image-slot--gallery">
-                        <div class="image-preview image-preview--small">
-                            <img v-if="galleryPreviews[i]" :src="galleryPreviews[i]" alt="" />
-                            <div v-else class="image-preview-empty"><i class="ti ti-photo"></i></div>
-                        </div>
-                        <div class="image-actions">
-                            <label class="btn-secondary btn-secondary--sm">
-                                <input type="file" accept="image/*" class="sr-only" @change="onGalleryFileChange($event, i)" />
-                                {{ img ? 'Remplacer' : 'Ajouter' }}
-                            </label>
-                            <button v-if="img" type="button" class="btn-danger btn-danger--sm" @click="removeImage(`homepage_preview_image_${i + 1}`)">
-                                <i class="ti ti-trash"></i>
-                            </button>
-                        </div>
+                <div class="recipe-picker">
+                    <input v-model="featuredSearch" type="text" placeholder="Rechercher une recette..." class="input" />
+                    <div class="recipe-picker-list">
+                        <button
+                            v-for="post in filteredFeaturedOptions" :key="post.id" type="button"
+                            class="recipe-option" :class="{ on: form.featured_post_id === post.id }"
+                            @click="form.featured_post_id = form.featured_post_id === post.id ? null : post.id"
+                        >
+                            <div class="recipe-option-thumb" :style="!post.image_path ? { background: '#E1F5EE' } : {}">
+                                <img v-if="post.image_path" :src="`/storage/${post.image_path}`" alt="" />
+                                <i v-else class="ti ti-tools-kitchen-2"></i>
+                            </div>
+                            <span>{{ post.title }}</span>
+                            <i v-if="form.featured_post_id === post.id" class="ti ti-check recipe-option-check"></i>
+                        </button>
+                        <p v-if="filteredFeaturedOptions.length === 0" class="hint">Aucune recette trouvée.</p>
                     </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title"><i class="ti ti-layout-grid" /> Recettes de la grille</h2>
+                <p class="hint">Jusqu'à {{ maxGridItems }} recettes affichées en tuiles sous la recette du moment.</p>
+
+                <div class="recipe-picker">
+                    <input v-model="gridSearch" type="text" placeholder="Rechercher une recette..." class="input" />
+                    <div class="recipe-picker-list">
+                        <button
+                            v-for="post in filteredGridOptions" :key="post.id" type="button"
+                            class="recipe-option" :class="{ on: form.grid_post_ids.includes(post.id) }"
+                            :disabled="!form.grid_post_ids.includes(post.id) && form.grid_post_ids.length >= maxGridItems"
+                            @click="toggleGridPost(post.id)"
+                        >
+                            <div class="recipe-option-thumb" :style="!post.image_path ? { background: '#E1F5EE' } : {}">
+                                <img v-if="post.image_path" :src="`/storage/${post.image_path}`" alt="" />
+                                <i v-else class="ti ti-tools-kitchen-2"></i>
+                            </div>
+                            <span>{{ post.title }}</span>
+                            <i v-if="form.grid_post_ids.includes(post.id)" class="ti ti-check recipe-option-check"></i>
+                        </button>
+                        <p v-if="filteredGridOptions.length === 0" class="hint">Aucune recette trouvée.</p>
+                    </div>
+                    <p class="hint">{{ form.grid_post_ids.length }} / {{ maxGridItems }} sélectionnée(s)</p>
                 </div>
             </section>
 
@@ -79,7 +106,7 @@ import { useForm, router } from '@inertiajs/vue3';
 export default {
     layout: null,
     components: { AdminLayout },
-    props: { content: Object },
+    props: { content: Object, availablePosts: Array, maxGridItems: Number },
     data() {
         return {
             form: useForm({
@@ -87,20 +114,25 @@ export default {
                 hero_subtitle: this.content.hero_subtitle,
                 hero_badge: this.content.hero_badge,
                 hero_image: null,
-                preview_images: [null, null, null, null, null, null],
+                featured_post_id: this.content.featured_post_id,
+                grid_post_ids: [...this.content.grid_post_ids],
             }),
             heroPreviewLocal: null,
-            galleryPreviewsLocal: [null, null, null, null, null, null],
+            featuredSearch: '',
+            gridSearch: '',
         };
     },
     computed: {
         heroPreview() {
             return this.heroPreviewLocal || this.storagePath(this.content.hero_image);
         },
-        galleryPreviews() {
-            return this.content.preview_images.map(
-                (img, i) => this.galleryPreviewsLocal[i] || this.storagePath(img)
-            );
+        filteredFeaturedOptions() {
+            const q = this.featuredSearch.trim().toLowerCase();
+            return this.availablePosts.filter((p) => !q || p.title.toLowerCase().includes(q));
+        },
+        filteredGridOptions() {
+            const q = this.gridSearch.trim().toLowerCase();
+            return this.availablePosts.filter((p) => !q || p.title.toLowerCase().includes(q));
         },
     },
     methods: {
@@ -113,11 +145,13 @@ export default {
             this.form.hero_image = file;
             this.heroPreviewLocal = URL.createObjectURL(file);
         },
-        onGalleryFileChange(e, i) {
-            const file = e.target.files[0];
-            if (!file) return;
-            this.form.preview_images[i] = file;
-            this.galleryPreviewsLocal[i] = URL.createObjectURL(file);
+        toggleGridPost(id) {
+            const i = this.form.grid_post_ids.indexOf(id);
+            if (i > -1) {
+                this.form.grid_post_ids.splice(i, 1);
+            } else if (this.form.grid_post_ids.length < this.maxGridItems) {
+                this.form.grid_post_ids.push(id);
+            }
         },
         removeImage(key) {
             if (!confirm('Supprimer cette image ?')) return;
@@ -174,15 +208,26 @@ export default {
 }
 .btn-danger--sm { display: flex; align-items: center; justify-content: center; }
 
-.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.recipe-picker { display: flex; flex-direction: column; gap: 10px; }
+.recipe-picker-list {
+    display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto;
+    border: 0.5px solid #E7E9E7; border-radius: 12px; padding: 6px;
+}
+.recipe-option {
+    display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 9px;
+    border: none; background: transparent; cursor: pointer; text-align: left; width: 100%; font-family: inherit;
+}
+.recipe-option:hover { background: #F7F8F6; }
+.recipe-option.on { background: #E7F5EF; }
+.recipe-option:disabled { opacity: .35; cursor: not-allowed; }
+.recipe-option-thumb { width: 36px; height: 36px; border-radius: 8px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #0F6E56; font-size: 15px; }
+.recipe-option-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.recipe-option span { font-size: 12.5px; color: #10241D; flex: 1; }
+.recipe-option-check { color: #1D9E75; font-size: 16px; flex-shrink: 0; }
 
 .btn-primary {
     background: #1D9E75; color: #fff; border: none; border-radius: 20px;
     padding: 10px 22px; font-size: 13.5px; font-weight: 500; cursor: pointer; align-self: flex-start;
 }
 .btn-primary:disabled { opacity: .6; cursor: default; }
-
-@media (max-width: 560px) {
-    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-}
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <AppLayout>
+    <component :is="pageLayout">
         <Head :title="post.title" />
 
         <div class="recipe-page">
@@ -23,13 +23,13 @@
                     </div>
                     <h1 class="recipe-title">{{ post.title }}</h1>
 
-                    <Link v-if="post.user" :href="route('users.show', post.user.id)" class="meta-author">
+                    <Link v-if="post.user && $page.props.auth.user" :href="route('users.show', post.user.id)" class="meta-author">
                         <UserAvatar :user="post.user" :size="26" />
                         <span>{{ post.user.name }}</span>
                     </Link>
-                    <div v-else class="meta-author">
-                        <UserAvatar :user="null" :size="26" />
-                        <span>{{ $page.props.site.name }}</span>
+                    <div v-else class="meta-author meta-author--static">
+                        <UserAvatar :user="post.user" :size="26" />
+                        <span>{{ post.user?.name ?? $page.props.site.name }}</span>
                     </div>
 
                     <div v-if="ratingsCount" class="rating-summary">
@@ -83,18 +83,19 @@
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </component>
 </template>
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { avatarColor } from '@/Components/Admin/avatarPalette.js';
 import UserAvatar from '@/Components/UserAvatar.vue';
 
 export default {
     layout: null,
-    components: { AppLayout, Head, Link, UserAvatar },
+    components: { AppLayout, PublicLayout, Head, Link, UserAvatar },
     props: {
         post: Object,
         isOwner: Boolean,
@@ -107,6 +108,11 @@ export default {
             hoverRating: null,
             myRatingLocal: this.myRating,
         };
+    },
+    computed: {
+        pageLayout() {
+            return this.$page.props.auth.user ? 'AppLayout' : 'PublicLayout';
+        },
     },
     methods: {
         avatarColor,
@@ -152,6 +158,7 @@ export default {
 
 .meta-author { display: flex; align-items: center; gap: 8px; text-decoration: none; width: fit-content; }
 .meta-author:hover span { color: #1D9E75; }
+.meta-author--static:hover span { color: #4B5A54; }
 .meta-author span { font-size: 13px; color: #4B5A54; font-weight: 500; }
 .meta-calories { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #993C1D; background: #FAECE7; padding: 3px 11px; border-radius: 999px; }
 

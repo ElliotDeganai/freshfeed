@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Support\HomepageShowcase;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,6 +16,14 @@ class PostShowController extends Controller
 
         // Une recette en brouillon n'est visible que par son auteur (mode aperçu).
         abort_unless($post->status === 'published' || $isOwner, 404);
+
+        // Visiteur non connecté : accès limité à la petite sélection mise en avant
+        // sur la page d'accueil (recette du moment + tuiles) — pas au catalogue
+        // complet. Un utilisateur connecté (même sans lien avec cette recette)
+        // continue de tout voir normalement, comme avant.
+        if (! Auth::check()) {
+            abort_unless(in_array($post->id, HomepageShowcase::guestAllowedPostIds(), true), 404);
+        }
 
         $post->load(['user:id,name,avatar_path', 'categories:id,name', 'ingredients', 'steps.images']);
 

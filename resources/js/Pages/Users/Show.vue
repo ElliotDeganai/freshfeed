@@ -94,7 +94,7 @@ export default {
 <style scoped>
 .profile-header {
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    max-width: 480px; margin: 0 auto 32px; padding: 8px 16px;
+    max-width: 850px; margin: 0 auto 32px; padding: 8px 16px;
 }
 .profile-name { font-size: 20px; font-weight: 500; color: #10241D; margin: 14px 0 8px; }
 .profile-bio { font-size: 13.5px; color: #4B5A54; line-height: 1.6; }

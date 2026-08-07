@@ -76,7 +76,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/avatar', [ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
 });
 
-Route::get('/u/{user}', [UserProfileController::class, 'show'])->name('users.show');
+Route::middleware('auth')->group(function () {
+    Route::get('/u/{user}', [UserProfileController::class, 'show'])->name('users.show');
+});
 
 Route::middleware('auth')->group(function () {
     Route::post('/posts/{post}/rating', [PostRatingController::class, 'store'])->name('posts.rating.store');
