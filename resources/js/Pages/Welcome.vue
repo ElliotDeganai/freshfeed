@@ -191,19 +191,23 @@ export default {
         </section>
 
         <!-- Statistiques -->
-        <section v-if="stats.recipes_count" class="stats-strip">
+        <section v-if="stats.recipes_count" class="stats-banner">
             <div class="stat-item">
                 <span class="stat-value">{{ stats.recipes_count }}</span>
                 <span class="stat-label">recette{{ stats.recipes_count > 1 ? 's' : '' }}</span>
             </div>
+            <div class="stat-divider"></div>
             <div class="stat-item">
                 <span class="stat-value">{{ stats.members_count }}</span>
-                <span class="stat-label">membre{{ stats.members_count > 1 ? 's' : '' }}</span>
+                <span class="stat-label">membre{{ stats.members_count > 1 ? 's' : '' }} actif{{ stats.members_count > 1 ? 's' : '' }}</span>
             </div>
-            <div v-if="stats.avg_rating" class="stat-item">
-                <span class="stat-value">{{ stats.avg_rating }}★</span>
-                <span class="stat-label">note moyenne</span>
-            </div>
+            <template v-if="stats.avg_rating">
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ stats.avg_rating }}★</span>
+                    <span class="stat-label">note moyenne</span>
+                </div>
+            </template>
         </section>
 
         <!-- CTA final -->
@@ -314,10 +318,15 @@ export default {
 .preview-teaser a:hover { text-decoration: underline; }
 
 /* Statistiques */
-.stats-strip { display: flex; justify-content: center; gap: 40px; padding: 28px 24px; max-width: 1100px; margin: 0 auto; }
+.stats-banner {
+    background: linear-gradient(155deg, #1D9E75 0%, #178563 55%, #0F6E56 100%);
+    display: flex; justify-content: center; align-items: center; gap: 48px;
+    padding: 32px 24px;
+}
 .stat-item { text-align: center; }
-.stat-value { display: block; font-size: 22px; font-weight: 600; color: #1D9E75; }
-.stat-label { display: block; font-size: 11.5px; color: #8FA098; margin-top: 2px; }
+.stat-value { display: block; font-size: 26px; font-weight: 600; color: #fff; }
+.stat-label { display: block; font-size: 11.5px; color: rgba(255,255,255,.8); margin-top: 2px; }
+.stat-divider { width: 1px; height: 40px; background: rgba(255,255,255,.25); }
 
 /* Fonctionnalités */
 .features { background: #FAFBFA; padding: 56px 24px; margin-top: 40px; }
@@ -354,7 +363,7 @@ export default {
     .intro-title { font-size: 26px; }
     .preview-layout { grid-template-columns: 1fr; }
     .preview-featured { min-height: 220px; }
-    .stats-strip { gap: 24px; }
+    .stats-banner { gap: 24px; padding: 26px 16px; }
     .features { padding: 44px 16px; }
     .features-grid { grid-template-columns: 1fr; gap: 28px; }
 }
