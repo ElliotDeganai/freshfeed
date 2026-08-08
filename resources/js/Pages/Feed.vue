@@ -16,7 +16,7 @@
                     <div class="post-header-body">
                         <Link v-if="post.user" :href="route('users.show', post.user.id)" class="post-author">{{ post.user.name }}</Link>
                         <span v-else class="post-author">{{ $page.props.site.name }}</span>
-                        <span class="post-meta">{{ timeAgo(post.published_at) }} · {{ post.categories.map(c => c.name).join(', ') || 'Recette' }}</span>
+                        <span class="post-meta">{{ timeAgo(post.published_at) }}</span>
                     </div>
                     <span v-if="post.calories !== null" class="calorie-pill"><i class="ti ti-flame"></i> {{ post.calories }} kcal / 100{{ post.calories_unit || 'g' }}</span>
                     <span v-if="post.ratings_count" class="rating-pill"><i class="ti ti-star"></i> {{ Number(post.ratings_avg_rating).toFixed(1) }} <span class="rating-pill-count">({{ post.ratings_count }})</span></span>
@@ -26,6 +26,9 @@
                 <Link :href="route('posts.show', post.id)" class="post-image-link">
                     <div v-if="post.image_path" class="post-image">
                         <img :src="`/storage/${post.image_path}`" alt="" />
+                        <div v-if="post.categories.length" class="post-image-tags">
+                            <span v-for="cat in post.categories" :key="cat.id" class="image-tag-pill">{{ cat.name }}</span>
+                        </div>
                     </div>
                 </Link>
 
@@ -150,7 +153,12 @@ export default {
 .rating-pill-count { font-weight: 400; opacity: .8; }
 
 .post-image-link { display: block; }
-.post-image { height: 220px; background: #F0F1F0; }
+.post-image { height: 220px; background: #F0F1F0; position: relative; }
+.post-image-tags { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+.image-tag-pill {
+    font-size: 11px; font-weight: 500; color: #fff; background: rgba(16,36,29,.55);
+    backdrop-filter: blur(3px); padding: 4px 11px; border-radius: 999px;
+}
 .post-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .post-body { padding: 12px 14px; }
