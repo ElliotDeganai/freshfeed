@@ -1,6 +1,15 @@
 <template>
     <component :is="pageLayout">
-        <Head :title="post.title" />
+        <Head :title="post.title">
+            <meta head-key="og:type" property="og:type" content="article" />
+            <meta head-key="og:title" property="og:title" :content="post.title" />
+            <meta head-key="og:description" property="og:description" :content="metaDescription" />
+            <meta head-key="og:image" property="og:image" :content="ogImage" />
+            <meta head-key="og:url" property="og:url" :content="pageUrl" />
+            <meta head-key="twitter:title" name="twitter:title" :content="post.title" />
+            <meta head-key="twitter:description" name="twitter:description" :content="metaDescription" />
+            <meta head-key="twitter:image" name="twitter:image" :content="ogImage" />
+        </Head>
 
         <div class="recipe-page">
             <div v-if="isOwner && post.status !== 'published'" class="preview-banner">
@@ -113,6 +122,20 @@ export default {
         };
     },
     computed: {
+        metaDescription() {
+            // content_safe garde encore quelques balises de mise en forme simples
+            // (voir PostShowController) — on les retire pour un texte de partage propre.
+            const plain = (this.post.content_safe || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            return plain.length > 160 ? plain.slice(0, 157) + '...' : (plain || `Une recette partagée sur ${this.$page.props.site.name}.`);
+        },
+        ogImage() {
+            return this.post.image_path
+                ? `${window.location.origin}/storage/${this.post.image_path}`
+                : `${window.location.origin}/images/og-banner.jpg`;
+        },
+        pageUrl() {
+            return window.location.href;
+        },
         pageLayout() {
             return this.$page.props.auth.user ? 'AppLayout' : 'PublicLayout';
         },
