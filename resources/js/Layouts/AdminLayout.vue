@@ -15,6 +15,9 @@
                 <Link :href="route('admin.dashboard')" class="sidebar-link" :class="{ on: isActive('admin.dashboard') }">
                     <i class="ti ti-layout-dashboard"></i> Tableau de bord
                 </Link>
+                <Link :href="route('admin.analytics.index')" class="sidebar-link" :class="{ on: isActive('admin.analytics.*') }">
+                    <i class="ti ti-chart-line"></i> Analytics
+                </Link>
                 <Link v-if="can('manage-posts') || can('manage-own-posts')"
                     :href="route('admin.posts.index')" class="sidebar-link" :class="{ on: isActive('admin.posts.*') }">
                     <i class="ti ti-tools-kitchen-2"></i> Recettes

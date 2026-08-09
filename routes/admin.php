@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HomepageController;
 use App\Http\Controllers\Admin\IngredientNutritionController;
@@ -26,6 +27,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
 
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics/details', [AnalyticsController::class, 'details'])->name('analytics.details');
 
         // Posts / Recettes — manage-own-posts suffit pour accéder au listing,
         // le contrôleur restreint ensuite ce que chacun peut voir/éditer.
