@@ -277,7 +277,7 @@ export default {
 .panel-title i { color: #1D9E75; font-size: 16px; }
 
 .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; font-size: 13px; color: #4B5A54; }
-.input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; }
+.input { border: 0.5px solid #D9DDD9; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; background: #fff; font-family: inherit; box-sizing: border-box; }
 .input--sm { width: 70px; flex-shrink: 0; }
 .calories-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .calories-meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
