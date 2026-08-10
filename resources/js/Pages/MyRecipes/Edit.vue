@@ -62,15 +62,30 @@
                     -->
                 </div>
 
-                <label class="field">
+                <div class="field">
                     <span>Catégories</span>
-                    <div class="pill-checklist">
-                        <label v-for="cat in categories" :key="cat.id" class="pill-check" :class="{ on: postForm.category_ids.includes(cat.id) }">
-                            <input type="checkbox" :value="cat.id" v-model="postForm.category_ids" class="sr-only" />
-                            {{ cat.name }}
-                        </label>
+
+                    <div v-if="selectedCategories.length" class="pill-checklist pill-checklist--selected">
+                        <button
+                            v-for="cat in selectedCategories" :key="cat.id" type="button"
+                            class="pill-check on" @click="toggleCategory(cat.id)"
+                        >
+                            {{ cat.name }} <i class="ti ti-x"></i>
+                        </button>
                     </div>
-                </label>
+
+                    <div class="category-picker">
+                        <input v-model="categorySearch" type="text" placeholder="Rechercher une catégorie..." class="input category-search" />
+                        <div class="category-picker-list">
+                            <label v-for="cat in filteredCategories" :key="cat.id" class="pill-check pill-check--row" :class="{ on: postForm.category_ids.includes(cat.id) }">
+                                <input type="checkbox" :value="cat.id" v-model="postForm.category_ids" class="sr-only" />
+                                {{ cat.name }}
+                                <i v-if="postForm.category_ids.includes(cat.id)" class="ti ti-check"></i>
+                            </label>
+                            <p v-if="filteredCategories.length === 0" class="category-empty">Aucune catégorie trouvée.</p>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="field">
                     <span>Statut</span>
@@ -82,7 +97,7 @@
                 <label class="field">
                     <span>Remplacer l'image de couverture</span>
                     <input type="file" accept="image/*" @change="onCoverChange" />
-                    <img v-if="post.image_path" :src="`/storage/${post.image_path}`" class="cover-preview" alt="" />
+                    <img v-if="coverPreview" :src="coverPreview" class="cover-preview" alt="" />
                 </label>
 
                 <div class="field">
@@ -201,11 +216,31 @@ export default {
                 images: [],
                 video: null,
             },
+            categorySearch: '',
+            // Initialisé avec l'image déjà enregistrée — remplacé par un aperçu
+            // local dès qu'un nouveau fichier est choisi (voir onCoverChange).
+            coverPreview: this.post.image_path ? `/storage/${this.post.image_path}` : null,
         };
     },
+    computed: {
+        filteredCategories() {
+            const q = this.categorySearch.trim().toLowerCase();
+            return this.categories.filter((c) => !q || c.name.toLowerCase().includes(q));
+        },
+        selectedCategories() {
+            return this.categories.filter((c) => this.postForm.category_ids.includes(c.id));
+        },
+    },
     methods: {
+        toggleCategory(id) {
+            const i = this.postForm.category_ids.indexOf(id);
+            if (i > -1) this.postForm.category_ids.splice(i, 1);
+            else this.postForm.category_ids.push(id);
+        },
         onCoverChange(e) {
-            this.postForm.image = e.target.files[0] ?? null;
+            const file = e.target.files[0] ?? null;
+            this.postForm.image = file;
+            if (file) this.coverPreview = URL.createObjectURL(file);
         },
         recalculateCalories() {
             router.post(route('my-recipes.estimate-calories', this.post.id), {}, { preserveScroll: true });
@@ -338,6 +373,16 @@ export default {
 .cover-preview { max-width: 160px; margin-top: 8px; border-radius: 12px; }
 
 .pill-checklist { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill-checklist--selected { margin-bottom: 10px; }
+.pill-checklist--selected .pill-check { display: inline-flex; align-items: center; gap: 5px; }
+.pill-checklist--selected .pill-check i { font-size: 13px; }
+
+.category-picker { border: 0.5px solid #E7E9E7; border-radius: 12px; padding: 10px; }
+.category-search { width: 100%; margin-bottom: 8px; }
+.category-picker-list { display: flex; flex-wrap: wrap; gap: 7px; max-height: 160px; overflow-y: auto; padding: 2px; }
+.pill-check--row { display: inline-flex; align-items: center; gap: 5px; }
+.pill-check--row i { font-size: 13px; color: #1D9E75; }
+.category-empty { font-size: 12px; color: #8FA098; padding: 6px 2px; }
 .pill-check { font-size: 12.5px; padding: 6px 13px; border-radius: 999px; border: 0.5px solid #E7E9E7; color: #6B7B74; cursor: pointer; background: #fff; }
 .pill-check.on { background: #1D9E75; border-color: #1D9E75; color: #fff; font-weight: 500; }
 
