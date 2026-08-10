@@ -15,7 +15,7 @@ class PersonalRecipesSeeder extends Seeder
      * ⚠️ Adapte cette adresse à ton compte réel avant de lancer le seeder —
      * c'est le propriétaire auquel les 5 recettes seront rattachées.
      */
-    private const OWNER_EMAIL = 'admin@sorecette.fr';
+    private const OWNER_EMAIL = 'edeganai@gmail.com';
 
     public function run(): void
     {
