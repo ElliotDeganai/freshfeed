@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             FreshFeedRolesAndPermissionsSeeder::class,
             FreshFeedTestUsersSeeder::class,
             IngredientNutritionSeeder::class, // base de référence pour l'estimation calorique
+            CategoriesSeeder::class, // base
             FreshFeedDemoRecipesSeeder::class,
         ]);
     }
