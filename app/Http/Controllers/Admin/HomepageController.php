@@ -22,6 +22,19 @@ class HomepageController extends Controller
 
     public function index(): Response
     {
+        // Les IDs enregistrés (featured_post_id / grid_post_ids) peuvent pointer vers
+        // des recettes supprimées depuis — sans ce filtrage, ces "IDs fantômes"
+        // occupent silencieusement de la place dans la limite du sélecteur sans
+        // jamais apparaître comme cochés, bloquant toute nouvelle sélection.
+        $publishedIds = Post::query()->published()->pluck('id')->all();
+
+        $featuredId = HomepageShowcase::featuredPostId();
+        if ($featuredId && ! in_array($featuredId, $publishedIds, true)) {
+            $featuredId = null;
+        }
+
+        $gridIds = array_values(array_intersect(HomepageShowcase::gridPostIds(), $publishedIds));
+
         return Inertia::render('Admin/Homepage/Index', [
             'content' => [
                 'hero_title' => AppSetting::get('homepage_hero_title', 'Cuisine, partage, découvre.'),
@@ -31,8 +44,8 @@ class HomepageController extends Controller
                 ),
                 'hero_badge' => AppSetting::get('homepage_hero_badge', 'Le réseau social des cuisiniers du quotidien'),
                 'hero_image' => AppSetting::get('homepage_hero_image'),
-                'featured_post_id' => HomepageShowcase::featuredPostId(),
-                'grid_post_ids' => HomepageShowcase::gridPostIds(),
+                'featured_post_id' => $featuredId,
+                'grid_post_ids' => $gridIds,
             ],
             // Liste légère de toutes les recettes publiées, pour le sélecteur —
             // filtrage/recherche fait côté client (volume raisonnable à ce stade).
