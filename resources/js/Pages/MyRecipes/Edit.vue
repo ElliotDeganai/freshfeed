@@ -117,6 +117,10 @@
                     <div class="step-card-header">
                         <span class="step-number">{{ i + 1 }}</span>
                         <p class="step-instruction">{{ step.instruction }}</p>
+                        <div class="step-order-btns">
+                            <button type="button" class="icon-btn" :disabled="i === 0" @click="moveStep(i, -1)"><i class="ti ti-chevron-up"></i></button>
+                            <button type="button" class="icon-btn" :disabled="i === post.steps.length - 1" @click="moveStep(i, 1)"><i class="ti ti-chevron-down"></i></button>
+                        </div>
                         <button class="icon-btn icon-btn--danger" @click="deleteStep(step)"><i class="ti ti-trash"></i></button>
                     </div>
 
@@ -250,6 +254,19 @@ export default {
             }, { forceFormData: true, preserveScroll: true });
         },
 
+        moveStep(i, direction) {
+            const target = i + direction;
+            if (target < 0 || target >= this.post.steps.length) return;
+
+            // Échange immédiat côté client pour un retour visuel instantané...
+            const steps = this.post.steps;
+            [steps[i], steps[target]] = [steps[target], steps[i]];
+
+            // ...puis on persiste le nouvel ordre complet côté serveur.
+            router.post(route('my-recipes.steps.reorder', this.post.id), {
+                order: steps.map((s) => s.id),
+            }, { preserveScroll: true, preserveState: true });
+        },
         deleteStep(step) {
             if (confirm('Supprimer cette étape et ses médias ?')) {
                 router.delete(route('my-recipes.steps.destroy', [this.post.id, step.id]), { preserveScroll: true });
@@ -353,6 +370,11 @@ export default {
 
 .step-card { border: 0.5px solid #E7E9E7; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
 .step-card-header { display: flex; align-items: flex-start; gap: 10px; }
+.step-order-btns { display: flex; flex-direction: column; gap: 0; flex-shrink: 0; }
+.step-order-btns .icon-btn { width: 22px; height: 18px; }
+.step-order-btns .icon-btn i { font-size: 14px; }
+.step-order-btns .icon-btn:disabled { opacity: .25; cursor: default; }
+.step-order-btns .icon-btn:disabled:hover { background: none; }
 .step-number {
     width: 24px; height: 24px; border-radius: 50%; background: #E7F5EF; color: #1D9E75;
     font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
